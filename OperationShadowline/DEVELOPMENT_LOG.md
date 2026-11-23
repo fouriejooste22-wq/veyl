@@ -4,6 +4,88 @@ Append-only. Newest entry at the top. Every entry records what was done, what wa
 
 ---
 
+## 2026-11-23 (later still) — Campaign subsystem, save schema, companions, and the first real tests
+
+### Context
+
+The user is on an iPad and asked to continue with whatever does not need the laptop. Everything here is pure logic and data, so none of it needed an engine.
+
+### Created
+
+| File | What it does |
+|---|---|
+| `Core/ShadowlineCampaignSubsystem.*` | The single owner of campaign state, and what every UI screen binds to |
+| `Core/ShadowlineSaveGame.*` | Two-file save schema (cheap header + full body) and `UShadowlineSaveLibrary` |
+| `Core/ShadowlineTypes.h` (extended) | `EShadowlineMissionState`, `EShadowlineDiscovery`, `FShadowlineMissionProgress`, `FShadowlineProvinceProgress`, `FShadowlineCampaignProgress` |
+| `Companions/ShadowlineCompanionDefinition.*` | Companion identity, personality brief, specialisation tiers with accumulating capabilities |
+| `Companions/ShadowlineDialogueSet.*` | Barks with region/weather/day-night/act filters, priority selection, random tie-breaking |
+| `Tests/ShadowlineCampaignTests.cpp` | **Six automation test groups, ~50 assertions** against the real C++ |
+| `Tools/verify_campaign_logic.py` | The same rules transcribed to Python and tested **now** |
+
+### Verified — and this time something substantive was actually checked
+
+`python3 -I Tools/verify_campaign_logic.py` → **17 of 17 checks pass.**
+
+This is the first real verification in the project. The campaign's derived state is pure logic over stored progress plus definition data, so it can be modelled exactly and tested without an engine. Cases covered:
+
+- fresh campaign gating; prerequisites met and unmet
+- a single discovery moving a province Open → Active
+- clearing requiring the overseer **and** every gating mission, with side operations never gating
+- clearing a prerequisite opening its dependent
+- an overseer resolved alone reading Active, not Cleared
+- a province with progress never being retroactively locked
+- mission locks following their province, with work already done outranking the lock
+- mission prerequisites gating independently of the province
+- required objectives counted, optional ones not, and idempotent on a repeated event
+- survey fraction: partial, clamped at 1.0, and a province with nothing to find reading 100%
+- island survey **weighted by content**, with an explicit assertion that one small province cannot count as a quarter of the island
+- undetected completion read from observed state, not from a caller's argument
+- regional director requiring every province in the region cleared
+- Meridian never offering a regional director
+- the finale requiring all four directors
+- unknown ids answering safely rather than throwing
+- stale save data for a removed province not inflating the overseer count
+
+`Tools/check_sources.py` → clean across 17 headers, 17 sources, 4 config files.
+
+**What this proves:** the rules are self-consistent and behave correctly at the edges.
+**What it does not prove:** that the C++ compiles, or that the Python transcription is faithful to it. `Tests/ShadowlineCampaignTests.cpp` is the real check and runs on the laptop — it needs no GPU and no content, so it is now step 1.5 of `SETUP.md`, before launching the editor.
+
+### Design decisions
+
+- **Nothing derived is ever stored.** `FShadowlineCampaignProgress` holds only facts that cannot be computed; province state, mission state, survey percentages and finale availability are all derived. Storing "province 7 is cleared" next to the facts that make it cleared is how a save file and the game's rules drift apart, and it produces exactly the progression bug that surfaces forty hours in and cannot be reproduced.
+- **Progress always outranks a lock.** A province or mission the player has worked in is never retroactively locked, even if its prerequisites are unmet. Players reach places out of order; taking their progress away is worse than letting the sequence break.
+- **Side operations never gate clearing.** Only story missions and confrontations do, so nobody is forced to hoover up every cache to move the campaign on.
+- **Island survey is weighted by content, not an average of percentages.** A province holding forty discoverables counts for more than one holding four. There is a test asserting this specifically, because the naive implementation is an easy mistake with a dishonest result.
+- **`CompleteMission` reads detection from stored state**, not from an argument. No caller can claim a clean run the stealth systems did not observe.
+- **Prerequisite checks deliberately skip the recursive branch**, so a cycle in the data cannot hang the game. Shallow chains stay a design rule rather than something enforced in code.
+- **Two save files per slot.** The menu reads a small header for five slots without deserialising a campaign. `SaveSlot` writes body then header, and reports failure loudly if the header write fails, because a stale header describing a newer body is worse than a failed save.
+- **Saves refuse to load from a newer version** rather than guessing.
+- **`UShadowlineDialogueSet` is stateless.** Cooldowns and once-ever tracking belong to the speaking component, because the asset is shared between every instance.
+- **Companion tiers accumulate** — tier 3 grants what tiers 1 and 2 granted.
+
+### Tooling improvement
+
+`check_sources.py` now knows that files under `Tests/` have no header of their own, and conversely **fails** a test file that is not guarded by `#if WITH_DEV_AUTOMATION_TESTS` — which would otherwise compile test code into a shipping build. The checker caught its own gap when the test file was added.
+
+### NOT verified
+
+- **Still never compiled.** Eight more files joined the first-build surface
+- The automation tests have never run — they are written, not executed
+- Nothing calls `RegisterDefinitions` yet; no province or mission asset exists
+- `UShadowlineSaveLibrary` has never written a file
+- No companion or dialogue asset authored, so `SelectBarkIndex` has never chosen a line
+
+### Next
+
+Still blocked on the laptop for the engine. Available here:
+
+1. `UShadowlineSquadComponent` — follow, regroup, formation, spacing, revive: the stage 7 companion behaviour, whose decision logic is testable the same way
+2. The player visibility model — the largest unbuilt system, and pure maths
+3. Authoring the fifteen province and fifty-five mission data assets as a commandlet or a Python script the editor can run, rather than fifteen hours of clicking
+
+---
+
 ## 2026-11-23 (later still) — Campaign expanded: 15 provinces, confrontation ladder, difficulty system
 
 ### What the user asked for

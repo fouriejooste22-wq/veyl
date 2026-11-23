@@ -228,10 +228,16 @@ def main() -> int:
         else:
             own = f"{path.stem}.h"
             includes = [Path(i).name for i in INCLUDE_RE.findall(text)]
-            if own not in includes:
+            # Automation test translation units have no header of their own, by convention.
+            in_tests = "Tests" in path.relative_to(SOURCE).parts
+            if own not in includes and not in_tests:
                 # Module impl .cpp legitimately includes the module header instead.
                 if path.stem != path.parent.name:
                     fail(path, None, f'does not include its own header "{own}"')
+            if in_tests and "WITH_DEV_AUTOMATION_TESTS" not in text:
+                fail(path, None,
+                     "test file is not guarded by #if WITH_DEV_AUTOMATION_TESTS, so it "
+                     "would be compiled into a shipping build")
 
     # Reflected class names should match their file, so UHT output lands where expected.
     for path in headers:

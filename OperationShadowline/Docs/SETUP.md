@@ -52,7 +52,24 @@ Build the `OperationShadowline` project (**Ctrl+Shift+B**).
 >
 > The files most likely to need a correction are `ShadowlineWorldAtmosphere.cpp` (the sky-component setter names move between engine versions) and `ShadowlineGameUserSettings.cpp` (`Scalability::FQualityLevels` members).
 
-### 1.5 Launch
+### 1.5 Run the automation tests — do this before anything else
+
+The campaign logic has automation tests, and they need **no GPU and no content**. They are the fastest way to find out whether the C++ actually works.
+
+In the editor: **Window → Test Automation → Shadowline.Campaign → Start Tests**.
+
+Or headless, which is quicker:
+
+```bat
+"C:\Program Files\Epic Games\UE_5.5\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" ^
+  "%CD%\OperationShadowline.uproject" ^
+  -ExecCmds="Automation RunTests Shadowline.Campaign; Quit" ^
+  -unattended -nopause -nullrhi -testexit="Automation Test Queue Empty"
+```
+
+Six test groups, roughly fifty assertions: province gating, mission gating, survey maths, the confrontation ladder, detection and difficulty, and robustness against bad data. **Paste the result back either way** — passing tells us the campaign rules are sound on real hardware, and failing tells us exactly which rule is wrong.
+
+### 1.6 Launch
 
 Once it builds, launch the editor from Visual Studio (**F5**) or by double-clicking the `.uproject`. The project has **no content yet** — no maps, no meshes, no input assets. The next part creates them.
 

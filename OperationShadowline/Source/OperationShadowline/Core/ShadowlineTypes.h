@@ -266,3 +266,118 @@ struct FShadowlineDifficultyKnobs
 	/** Returns the knob set for a named preset. Custom returns Standard as its start point. */
 	static FShadowlineDifficultyKnobs FromPreset(EShadowlineDifficulty Preset);
 };
+
+/** Runtime state of one mission. Derived from progress, never stored directly. */
+UENUM(BlueprintType)
+enum class EShadowlineMissionState : uint8
+{
+	/** Its prerequisites, or its province's, are unmet. */
+	Locked		UMETA(DisplayName = "Locked"),
+	/** Startable, nothing done. */
+	Available	UMETA(DisplayName = "Available"),
+	/** At least one objective satisfied, not all required ones. */
+	Active		UMETA(DisplayName = "In Progress"),
+	Complete	UMETA(DisplayName = "Complete")
+};
+
+/** What kind of thing the player just found. Feeds the survey percentage. */
+UENUM(BlueprintType)
+enum class EShadowlineDiscovery : uint8
+{
+	Document	UMETA(DisplayName = "Document"),
+	Landmark	UMETA(DisplayName = "Landmark"),
+	Cache		UMETA(DisplayName = "Supply Cache")
+};
+
+/** Stored progress for one mission. */
+USTRUCT(BlueprintType)
+struct FShadowlineMissionProgress
+{
+	GENERATED_BODY()
+
+	/** Completion events already raised, matching FShadowlineObjective::CompletionEvent. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	TArray<FName> CompletedObjectives;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	bool bComplete = false;
+
+	/** True when the mission was finished without ever being detected. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	bool bCompletedUndetected = false;
+
+	/** Set the first time the player is detected during this mission. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	bool bDetectedThisAttempt = false;
+};
+
+/** Stored progress for one province. */
+USTRUCT(BlueprintType)
+struct FShadowlineProvinceProgress
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress", meta = (ClampMin = "0"))
+	int32 DocumentsFound = 0;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress", meta = (ClampMin = "0"))
+	int32 LandmarksFound = 0;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress", meta = (ClampMin = "0"))
+	int32 CachesFound = 0;
+
+	/** True once the province's named overseer has been dealt with. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	bool bOverseerResolved = false;
+};
+
+/**
+ * The whole campaign's stored state.
+ *
+ * Deliberately only what cannot be derived: everything else (province state, mission state,
+ * survey percentages, whether the finale is open) is computed by
+ * UShadowlineCampaignSubsystem from this plus the definition assets. Storing derived state
+ * is how save games and game logic drift apart.
+ */
+USTRUCT(BlueprintType)
+struct FShadowlineCampaignProgress
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	TMap<FName, FShadowlineProvinceProgress> Provinces;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	TMap<FName, FShadowlineMissionProgress> Missions;
+
+	/** Regions whose director has been resolved. The finale needs all four. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	TSet<EShadowlineRegion> ResolvedDirectors;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	EShadowlineDifficulty Difficulty = EShadowlineDifficulty::Standard;
+
+	/** Only meaningful when Difficulty is Custom. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	FShadowlineDifficultyKnobs CustomKnobs;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress", meta = (ClampMin = "1"))
+	int32 Act = 1;
+
+	/** In-game days elapsed since landfall. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress", meta = (ClampMin = "0"))
+	int32 Day = 1;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	float TimeOfDay = 9.5f;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	EShadowlineWeather Weather = EShadowlineWeather::Clear;
+
+	/** Province the team is currently in. */
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress")
+	FName CurrentProvinceId;
+
+	UPROPERTY(BlueprintReadOnly, SaveGame, Category = "Progress", meta = (ClampMin = "0.0"))
+	float PlaytimeSeconds = 0.f;
+};

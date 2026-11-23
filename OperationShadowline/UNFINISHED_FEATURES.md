@@ -107,15 +107,17 @@ Status key: ⛔ not started · 🔨 partial · ⚠️ written but never compiled
 | Campaign designed: 15 provinces, 16 named antagonists, 55 operations | ✅ design only (`Docs/CAMPAIGN.md`) |
 | `UShadowlineProvinceDefinition` / `UShadowlineMissionDefinition` | ⚠️ written, never compiled |
 | Province and mission assets authored in editor | ⛔ |
-| `UShadowlineCampaignSubsystem` (province state, mission state, survey %) | ⛔ — every UI screen needs it |
-| Mission / objective runtime framework | ⛔ |
+| `UShadowlineCampaignSubsystem` (province state, mission state, survey %) | ⚠️ written; **logic verified by 17 Python checks + 6 automation test groups, neither run against compiled C++** |
+| Save / load (`UShadowlineSaveLibrary`, two-file slots) | ⚠️ written, never written a file |
+| Mission / objective runtime framework | ⛔ — the subsystem tracks state; nothing drives it |
+| `RegisterDefinitions` ever called | ⛔ |
 | Reconnaissance, rescue, investigation, supply, search missions | ⛔ |
 | Optional objectives | ⛔ |
 | Environmental puzzles | ⛔ |
 | Non-lethal gadgets (scope, drone, signal sniffer, emitter, door shim) | ⛔ |
 | Fictional security systems | ⛔ |
 | Collectible documents, hidden locations, landmark discovery | ⛔ |
-| Save / load | ⛔ |
+| Save / load | ⚠️ schema and library written; see stage 6 |
 
 ## Stage 7 — AI
 
@@ -130,7 +132,9 @@ Nothing exists.
 | Difficulty levels | 🔨⚠️ `FShadowlineDifficultyKnobs` + 4 presets written with real values; **nothing reads them** — the systems they tune do not exist |
 | **Player visibility/concealment model** | ⛔ the heart of the stealth loop; nothing yet |
 | `StealthVision` trace channel | ⛔ |
-| Companion AI (follow, regroup, formation, revive, dialogue) | ⛔ |
+| Companion AI (follow, regroup, formation, revive) | ⛔ |
+| `UShadowlineCompanionDefinition` (identity, specialisation tiers) | ⚠️ written, never compiled |
+| `UShadowlineDialogueSet` (barks, context filters, priority selection) | ⚠️ written; **no dialogue asset exists, so no line has ever been chosen** |
 | Companion progression and customisation | ⛔ |
 | Civilians, wildlife, traffic | ⛔ |
 
@@ -162,7 +166,7 @@ Nothing exists. `ChaosVehicles` is enabled in the `.uproject` and nothing uses i
 | Measure anything, ever | ⛔ |
 | Validate the scalability ladder on real hardware | ⛔ |
 | Streaming / shader-compilation / draw-call budgets | ⛔ |
-| Automated tests | ⛔ |
+| Automated tests | 🔨⚠️ `Tests/ShadowlineCampaignTests.cpp`: 6 groups, ~50 assertions on campaign logic. **Never run.** Nothing covers movement, camera, traversal, atmosphere or settings |
 
 ---
 
