@@ -4,6 +4,72 @@ Append-only. Newest entry at the top. Every entry records what was done, what wa
 
 ---
 
+## 2026-11-23 (later still) — Campaign expanded: 15 provinces, confrontation ladder, difficulty system
+
+### What the user asked for
+
+A bigger, more detailed map with more regions; more missions building up to a boss; difficulty levels; more detail generally, including in-game photos in the menu; "Ghost Recon style".
+
+### What was delivered, and the three honest limits stated up front
+
+| Asked | Delivered | Limit |
+|---|---|---|
+| Bigger, more detailed map, more regions | Island expanded to 85 × 120 km, 5 regions subdivided into **15 provinces**, generated province areas, roads, contours, rivers, dunes, plant grid, compass rose, four toggleable marker layers | Still a web mockup, not an Unreal widget |
+| More missions building to a boss | **55 operations**: 15 province confrontations → 4 regional directors → 1 final antagonist | Designed and data-modelled; none implemented |
+| Difficulty levels | 4 presets + Custom, **19 knobs**, in `FShadowlineDifficultyKnobs` with real values | Nothing reads the knobs yet — the AI they tune does not exist |
+| In-game photos in the menu | Procedural concept vistas per biome (alpine, coast, jungle, desert, industrial) with layered ridgelines, atmospheric haze, sun glow, foreground silhouettes and weather | **Not screenshots.** Nothing has been rendered in an engine, so no capture exists. Every image carries a visible "concept art — not a capture" label |
+| Ghost Recon style | Genre structure adopted: provinces, intel gathering, a named target per province, a regional tier above them | **No asset, name, mark, mission, character or interface design copied.** Copying would make the project unusable |
+| "Create the game for me" | Not possible | UE5 does not run on iPadOS or in this container. Code, data and design can be built here; engine assembly needs the laptop |
+
+### Created
+
+**C++ data schemas** — the campaign is now modelled in code, not only in prose:
+
+| File | What it carries |
+|---|---|
+| `Core/ShadowlineTypes.h` (extended) | `EShadowlineMissionType` (9 types), `EShadowlineDifficulty` (5), `EShadowlineProvinceState` (4), `FShadowlineObjective`, `FShadowlineDifficultyKnobs` (19 knobs) |
+| `Core/ShadowlineTypes.cpp` (new) | `FShadowlineDifficultyKnobs::FromPreset` — the four presets' real values |
+| `World/ShadowlineProvinceDefinition.*` | Province identity, tier, overseer, mission list, discoverable counts, prerequisites, map seed point and tint |
+| `Core/ShadowlineMissionDefinition.*` | Mission identity, type, act, briefing, objective array, prerequisites, `bUndetectedForBestOutcome`, map location |
+| `Settings/ShadowlineDifficultyProfile.*` | A difficulty as an asset, so designers can author profiles and a mission can override one for a sequence |
+
+**Docs**: `Docs/CAMPAIGN.md` — the full province table, all sixteen named antagonists, operation counts by type, the ending, and the open design questions. `Docs/WORLD_AURELIA.md` extended with the province breakdown.
+
+**Interface reference** rebuilt to nine screens: menu, world map, campaign ladder, operations, difficulty, squad, loadout, graphics, HUD.
+
+### Design decisions
+
+- **Province areas are generated, not drawn.** Each province carries a `MapSeedPoint`; the map assigns every point on the island to its nearest seed. Moving one seed reshapes its neighbours. No province outline is authored anywhere, which means rebalancing the map is editing a number rather than redrawing a shape.
+- **A confrontation is never a fight.** Threshold has no weapons and no authority to use force, so each of the sixteen antagonists resolves by getting them on record, lifting a drive, reaching a place first, or putting them on a boat. This keeps the brief's "avoid real-world combat procedures" constraint and makes each one a design problem instead.
+- **Difficulty is mostly interface.** Six of the nineteen knobs are assists rather than opposition. The largest felt difference between Standard and Blackout is not that guards see further — it is losing the target marker, the tracker, the concealment readout and the compass, and having to read the world instead. Far cheaper to build than smarter AI, and a bigger difference.
+- **Nothing is locked behind a difficulty**, and lowering it carries no penalty. A stealth game that punishes approachability gets abandoned.
+- **Consequences, not deaths.** A downed companion self-recovers, needs reviving, or on Blackout is extracted for the rest of the act. Threshold loses people to evacuation.
+- **Prerequisites stay shallow.** Province order inside a region is almost free, so the open world does not become a corridor.
+- **The ending is still not a boss fight.** The user asked for a boss; the answer is sixteen named antagonists and a final confrontation that resolves as a choice — expose Aurelia or contain it — rather than combat. This keeps the brief's non-lethal mandate intact while giving the campaign the build-up they wanted.
+
+### Verified
+
+- ✅ `python3 -I Tools/check_sources.py` → exit 0 across 13 headers, 12 sources, 4 config files
+- ✅ The interface page's script parses
+- ✅ Published; map pan/zoom/province selection, layer toggles, difficulty preset switching and the graphics preset/group interplay all exercised in the published page
+
+### NOT verified
+
+- **Still never compiled.** The new data assets add four more files to the first-build surface
+- No mission, province or difficulty asset has been authored in the editor
+- **Nothing reads `FShadowlineDifficultyKnobs`.** The values are real and the schema is sound, but the systems they tune — NPC perception, patrol placement, HUD assists — do not exist. This is stage 7
+- The 55 operations are titles and objective lists, not implemented missions
+
+### Next
+
+Blocked on the laptop for anything engine-side. Available here:
+
+1. Companion dialogue data schema, which stage 7 needs
+2. The save-game header schema the menu's status panel reads
+3. `UShadowlineCampaignSubsystem` — province state, mission state, difficulty, survey percentage: the thing every screen binds to
+
+---
+
 ## 2026-11-23 (later) — Stage 2 begun: interface design reference
 
 ### Context change

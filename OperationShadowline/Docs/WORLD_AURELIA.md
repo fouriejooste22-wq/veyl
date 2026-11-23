@@ -24,6 +24,20 @@ Its geography is the reason the five regions look nothing alike: the Kolda massi
 
 ---
 
+### Provinces
+
+Each region is divided into provinces — fifteen in all, and the unit the campaign is structured around. Each carries its own difficulty tier, operations, discoverables and named Vantrell overseer. The full breakdown, the confrontation ladder and the operation counts are in **[`CAMPAIGN.md`](CAMPAIGN.md)**.
+
+| Region | Provinces |
+|---|---|
+| Kolda Range | Hale Terraces, Vosk Pass, Kolda Summit |
+| Siren Coast | Port Calloway, Dunmere Shelf, The Three Stacks, The Wreckline |
+| Vaelmire Basin | Ferrow's Crossing, Greenmouth Delta, The Sunken Quarter |
+| Ashen Flats | The Long Run, Cinder Reach, Field One |
+| Meridian Works | The Research Annex, Meridian Works |
+
+The island measures roughly **85 km east–west by 120 km north–south**.
+
 ## 2. Premise
 
 Aurelia went quiet eleven days ago. Not gradually — all of it, inside four hours. Satellite relay, maritime radio, the undersea cable, the civil aviation beacon. No distress call, no weather event, no seismic trigger large enough to explain it.

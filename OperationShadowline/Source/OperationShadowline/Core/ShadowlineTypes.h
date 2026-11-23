@@ -95,3 +95,174 @@ struct FShadowlineTraversalProbe
 	UPROPERTY(BlueprintReadOnly, Category = "Traversal")
 	FVector FaceNormal = FVector::ZeroVector;
 };
+
+/** Mission categories. Drives the map icon, the operations filter and the reward shape. */
+UENUM(BlueprintType)
+enum class EShadowlineMissionType : uint8
+{
+	Reconnaissance	UMETA(DisplayName = "Reconnaissance"),
+	Rescue			UMETA(DisplayName = "Rescue"),
+	Investigation	UMETA(DisplayName = "Investigation"),
+	SupplyRecovery	UMETA(DisplayName = "Supply Recovery"),
+	Search			UMETA(DisplayName = "Search and Discovery"),
+	Puzzle			UMETA(DisplayName = "Environmental Puzzle"),
+	/** A named Vantrell overseer: expose, record or extract them. Never lethal. */
+	Confrontation	UMETA(DisplayName = "Confrontation"),
+	/** The regional director, unlocked once a region's provinces are cleared. */
+	Director		UMETA(DisplayName = "Regional Director"),
+	/** The final antagonist at Meridian Works. */
+	Finale			UMETA(DisplayName = "Finale")
+};
+
+/** Named difficulty presets. Custom exposes every knob in FShadowlineDifficultyKnobs. */
+UENUM(BlueprintType)
+enum class EShadowlineDifficulty : uint8
+{
+	/** Story-forward. Generous detection, every assist on. */
+	Field		UMETA(DisplayName = "Field"),
+	Standard	UMETA(DisplayName = "Standard"),
+	/** Faster detection, fewer assists, no marker on the target. */
+	Veteran		UMETA(DisplayName = "Veteran"),
+	/** No HUD, no map markers, a detection cascade with no second chance. */
+	Blackout	UMETA(DisplayName = "Blackout"),
+	Custom		UMETA(DisplayName = "Custom")
+};
+
+/** How far a province has progressed. Drives the map and the campaign tree. */
+UENUM(BlueprintType)
+enum class EShadowlineProvinceState : uint8
+{
+	/** Not yet reachable: its prerequisites are unmet. */
+	Locked		UMETA(DisplayName = "Locked"),
+	/** Reachable, nothing done. */
+	Open		UMETA(DisplayName = "Open"),
+	/** Some missions complete. */
+	Active		UMETA(DisplayName = "Active"),
+	/** Every required mission complete, overseer resolved. */
+	Cleared		UMETA(DisplayName = "Cleared")
+};
+
+/**
+ * One objective line on a mission.
+ * Optional objectives are how the investigation missions reward curiosity, so the
+ * distinction is data rather than presentation.
+ */
+USTRUCT(BlueprintType)
+struct FShadowlineObjective
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FText Description;
+
+	/** False objectives are shown differently and never block completion. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	bool bRequired = true;
+
+	/** Hidden until a prior objective completes, for mid-mission reveals. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	bool bHiddenUntilReached = false;
+
+	/** Tag the mission logic raises when this objective is satisfied. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName CompletionEvent;
+};
+
+/**
+ * Every knob a difficulty preset sets.
+ *
+ * Kept as one struct so a preset, a custom configuration and a per-mission override are
+ * all the same type, and so that adding a knob cannot leave a preset half-defined.
+ * Multipliers are relative to Standard, which is 1.0 throughout.
+ */
+USTRUCT(BlueprintType)
+struct FShadowlineDifficultyKnobs
+{
+	GENERATED_BODY()
+
+	// --- Detection ---
+
+	/** How fast an NPC's suspicion rises while the player is visible. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection", meta = (ClampMin = "0.1", ClampMax = "4.0"))
+	float SuspicionRate = 1.f;
+
+	/** How fast suspicion decays once the player breaks line of sight. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection", meta = (ClampMin = "0.1", ClampMax = "4.0"))
+	float SuspicionDecayRate = 1.f;
+
+	/** Multiplier on NPC sight range. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection", meta = (ClampMin = "0.25", ClampMax = "2.5"))
+	float SightRange = 1.f;
+
+	/** Multiplier on how far NPCs hear the player's movement noise. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection", meta = (ClampMin = "0.25", ClampMax = "2.5"))
+	float HearingRange = 1.f;
+
+	/** How long a search persists after contact is lost, in seconds. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection", meta = (ClampMin = "5.0", ClampMax = "600.0"))
+	float SearchPersistenceSeconds = 60.f;
+
+	/** True when a detection anywhere alerts the whole site rather than the nearest patrol. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Detection")
+	bool bSiteWideAlerts = false;
+
+	// --- Opposition ---
+
+	/** Multiplier on the number of NPCs placed at a site. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Opposition", meta = (ClampMin = "0.4", ClampMax = "2.0"))
+	float PatrolDensity = 1.f;
+
+	/** Multiplier on how far NPCs relay a sighting to each other. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Opposition", meta = (ClampMin = "0.25", ClampMax = "3.0"))
+	float CommunicationRange = 1.f;
+
+	/** True when night patrols carry lights and thermal optics. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Opposition")
+	bool bNightOpticsEnabled = false;
+
+	// --- Assists ---
+
+	/** Marks the mission target on the map and compass. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Assists")
+	bool bTargetMarkers = true;
+
+	/** Shows discovered NPCs as map and world markers after tagging. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Assists")
+	bool bTaggingEnabled = true;
+
+	/** Shows the on-screen objective tracker. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Assists")
+	bool bObjectiveTracker = true;
+
+	/** Shows the concealment readout. With it off, the player reads cover from the world. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Assists")
+	bool bConcealmentReadout = true;
+
+	/** Shows the compass bearing strip. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Assists")
+	bool bCompass = true;
+
+	/** Multiplier on the hand drone's range. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Assists", meta = (ClampMin = "0.25", ClampMax = "2.0"))
+	float DroneRange = 1.f;
+
+	// --- Consequences ---
+
+	/** Companions recover on their own after this long. Zero means they need reviving. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consequences", meta = (ClampMin = "0.0", ClampMax = "300.0"))
+	float CompanionSelfRecoverySeconds = 45.f;
+
+	/**
+	 * True when a downed companion is unavailable for the rest of the act rather than
+	 * revivable. Threshold has no deaths: an unavailable companion has been extracted.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consequences")
+	bool bCompanionLossPersists = false;
+
+	/** Multiplier on weather severity, which affects both concealment and visibility. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consequences", meta = (ClampMin = "0.5", ClampMax = "2.0"))
+	float WeatherSeverity = 1.f;
+
+	/** Returns the knob set for a named preset. Custom returns Standard as its start point. */
+	static FShadowlineDifficultyKnobs FromPreset(EShadowlineDifficulty Preset);
+};

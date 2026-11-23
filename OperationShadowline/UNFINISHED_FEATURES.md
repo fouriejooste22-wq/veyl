@@ -46,6 +46,8 @@ Status key: ⛔ not started · 🔨 partial · ⚠️ written but never compiled
 
 | Question | Note |
 |---|---|
+| **What happens to a resolved overseer** | They should persist in the world — reassigned, recalled, or still there and now aware of you. No system exists. |
+| **Director mission design** | The four regional director missions are named and sited but have no objective structure. |
 | **Mission failure state** | Threshold has no fail state that works as a death screen. Detection should escalate, not end the mission. Unresolved — not guessed at. |
 | Map render source | Specified as a `SceneCapture2D` orthographic bake per region. Untested; may not hold up at 70 km. |
 | Save-header format | The menu's status panel needs act/region/clock/weather/survey% without streaming a level. Schema not designed. |
@@ -98,11 +100,15 @@ Status key: ⛔ not started · 🔨 partial · ⚠️ written but never compiled
 
 ## Stage 6 — exploration and missions
 
-Nothing exists.
+**Data schemas written; no mission implemented.**
 
 | Item | Status |
 |---|---|
-| Mission / objective framework | ⛔ |
+| Campaign designed: 15 provinces, 16 named antagonists, 55 operations | ✅ design only (`Docs/CAMPAIGN.md`) |
+| `UShadowlineProvinceDefinition` / `UShadowlineMissionDefinition` | ⚠️ written, never compiled |
+| Province and mission assets authored in editor | ⛔ |
+| `UShadowlineCampaignSubsystem` (province state, mission state, survey %) | ⛔ — every UI screen needs it |
+| Mission / objective runtime framework | ⛔ |
 | Reconnaissance, rescue, investigation, supply, search missions | ⛔ |
 | Optional objectives | ⛔ |
 | Environmental puzzles | ⛔ |
@@ -120,7 +126,8 @@ Nothing exists.
 | Enemy NPC base, patrol behaviour | ⛔ |
 | Perception, suspicion levels, search behaviour | ⛔ |
 | NPC-to-NPC communication | ⛔ |
-| Day/night behaviour variation, difficulty levels | ⛔ |
+| Day/night behaviour variation | ⛔ |
+| Difficulty levels | 🔨⚠️ `FShadowlineDifficultyKnobs` + 4 presets written with real values; **nothing reads them** — the systems they tune do not exist |
 | **Player visibility/concealment model** | ⛔ the heart of the stealth loop; nothing yet |
 | `StealthVision` trace channel | ⛔ |
 | Companion AI (follow, regroup, formation, revive, dialogue) | ⛔ |
