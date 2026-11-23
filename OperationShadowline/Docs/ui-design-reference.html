@@ -1,0 +1,1127 @@
+<title>Shadowline Interface Reference</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed left spine of screens, 16:9 mock stage, optional annotation column.
+   Committed dark palette - this is a game interface, it is dark in every viewer theme. */
+:root{
+  color-scheme: dark;
+  --bg:#0a0e12;
+  --sea:#091318;
+  --panel:#111a21;
+  --panel-2:#16212b;
+  --tile:#1b2835;
+  --line:#22313e;
+  --line-2:#2e4252;
+  --ink:#e9e5da;
+  --ink-2:#97a2aa;
+  --ink-3:#5f6d78;
+  --amber:#d99a3a;
+  --cyan:#6fa8ab;
+  --good:#7fa86b;
+  --warn:#c9893f;
+  --crit:#b4524a;
+  --kolda:#51708c;
+  --vaelmire:#4e7a5c;
+  --ashen:#8a7a63;
+  --siren:#5f8c99;
+  --meridian:#8a6a52;
+  --display:'Archivo Narrow','Arial Narrow',system-ui,sans-serif;
+  --body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--body);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(1200px 700px at 78% -8%, rgba(217,154,58,.045), transparent 62%),
+    radial-gradient(900px 600px at 6% 104%, rgba(111,168,171,.04), transparent 60%);
+}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:.01em}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- page shell ---------- */
+.shell{max-width:1320px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+
+.masthead{padding-block:28px 20px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.masthead h1{font-size:clamp(26px,4.6vw,38px);line-height:1.05;margin-top:8px}
+.masthead h1 span{color:var(--ink-3);font-weight:500}
+.lede{color:var(--ink-2);max-width:66ch;margin-top:12px;font-size:14.5px}
+
+.caution{
+  display:flex;gap:12px;align-items:flex-start;
+  margin-top:20px;padding:13px 15px;
+  border:1px solid rgba(201,137,63,.32);border-left:3px solid var(--warn);
+  background:rgba(201,137,63,.055);border-radius:2px;
+}
+.caution svg{flex:0 0 auto;margin-top:2px}
+.caution p{margin:0;font-size:13px;color:var(--ink-2)}
+.caution strong{color:var(--ink);font-weight:600}
+
+/* ---------- controls bar ---------- */
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding-block:18px}
+.spine{display:flex;flex-wrap:wrap;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:3px;min-width:0}
+.spine button{
+  font:inherit;font-family:var(--display);font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);background:none;border:0;padding:8px 13px;cursor:pointer;border-radius:1px;
+  transition:color .16s ease,background .16s ease;white-space:nowrap;
+}
+.spine button:hover{color:var(--ink-2);background:var(--panel-2)}
+.spine button[aria-selected="true"]{color:#0a0e12;background:var(--amber)}
+.spine button:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+
+.toggle{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);cursor:pointer;user-select:none}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.toggle .sw{width:34px;height:18px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);position:relative;transition:background .18s ease,border-color .18s ease;flex:0 0 auto}
+.toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--ink-3);transition:transform .18s ease,background .18s ease}
+.toggle input:checked + .sw{background:rgba(111,168,171,.2);border-color:var(--cyan)}
+.toggle input:checked + .sw::after{transform:translateX(16px);background:var(--cyan)}
+.toggle input:focus-visible + .sw{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* ---------- mock stage ---------- */
+.stage{
+  position:relative;border:1px solid var(--line-2);border-radius:3px;overflow:hidden;
+  background:var(--sea);aspect-ratio:16/9;min-height:430px;
+  box-shadow:0 24px 60px -24px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.015);
+}
+@media (max-width:760px){.stage{aspect-ratio:auto;height:min(78vh,620px);min-height:0}}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.screen[hidden]{display:none!important}
+
+/* in-game chrome */
+.gamebar{
+  display:flex;gap:16px;align-items:center;justify-content:space-between;
+  padding:11px 18px;border-bottom:1px solid var(--line);background:rgba(9,14,18,.72);flex:0 0 auto;
+}
+.gamebar .brand{display:flex;align-items:center;gap:10px;min-width:0}
+.gamebar .brand b{font-family:var(--display);font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+.gamebar .readout{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.06em}
+.gamebar .readout b{color:var(--ink-2);font-weight:500}
+.mark{width:19px;height:19px;flex:0 0 auto}
+
+.body-pad{flex:1 1 auto;min-height:0;overflow:auto;padding:18px}
+.body-flush{flex:1 1 auto;min-height:0;position:relative}
+
+/* ---------- main menu ---------- */
+.menu{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.84fr);min-height:0}
+@media (max-width:760px){.menu{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}}
+.menu-left{padding:clamp(18px,3.4vw,42px);display:flex;flex-direction:column;justify-content:center;gap:28px;min-width:0}
+.op-title{font-family:var(--display);font-size:clamp(30px,5.6vw,58px);line-height:.94;letter-spacing:-.01em}
+.op-title em{display:block;font-style:normal;font-size:.33em;letter-spacing:.3em;color:var(--amber);font-weight:600;margin-bottom:10px}
+.menu-list{display:flex;flex-direction:column;gap:1px;max-width:330px}
+.menu-item{
+  display:flex;align-items:baseline;gap:12px;padding:10px 14px;border-left:2px solid transparent;cursor:pointer;
+  font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2);
+  background:none;border-top:0;border-right:0;border-bottom:0;text-align:left;transition:all .15s ease;
+}
+.menu-item:hover{color:var(--ink);background:rgba(255,255,255,.028);border-left-color:var(--line-2)}
+.menu-item[aria-current="true"]{color:var(--amber);border-left-color:var(--amber);background:rgba(217,154,58,.07)}
+.menu-item small{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-3);text-transform:none;font-weight:400}
+.menu-item:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+.menu-right{border-left:1px solid var(--line);background:linear-gradient(170deg,rgba(81,112,140,.1),rgba(9,14,18,0) 55%);padding:clamp(16px,2.6vw,26px);display:flex;flex-direction:column;gap:14px;min-width:0;overflow:auto}
+.panel-h{font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3);padding-bottom:7px;border-bottom:1px solid var(--line)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px}
+.kv dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;color:var(--ink-3);text-transform:uppercase;align-self:baseline}
+.kv dd{margin:0;color:var(--ink);min-width:0}
+.savecard{border:1px solid var(--line);background:var(--panel);padding:12px 13px;border-radius:2px}
+.savecard h4{font-size:14px;margin-bottom:3px}
+.savecard .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.05em}
+.bar-mini{height:3px;background:var(--tile);border-radius:2px;overflow:hidden;margin-top:9px}
+.bar-mini i{display:block;height:100%;background:var(--cyan)}
+
+/* ---------- map ---------- */
+.mapwrap{position:absolute;inset:0;overflow:hidden;background:var(--sea);touch-action:none;cursor:grab}
+.mapwrap:active{cursor:grabbing}
+.mapwrap canvas{display:block;width:100%;height:100%}
+.map-hud{position:absolute;inset:0;pointer-events:none}
+.map-panel{
+  position:absolute;top:14px;left:14px;width:min(258px,calc(100% - 28px));
+  background:rgba(13,20,26,.93);border:1px solid var(--line-2);border-radius:2px;padding:13px;pointer-events:auto;
+  backdrop-filter:blur(6px);
+}
+.map-panel h3{font-size:16px;letter-spacing:.03em}
+.map-panel .sub{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);margin-bottom:7px}
+.map-panel p{margin:8px 0 0;font-size:12.5px;color:var(--ink-2)}
+.map-tools{position:absolute;bottom:14px;left:14px;display:flex;gap:5px;pointer-events:auto}
+.map-tools button{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;width:30px;height:30px;
+  background:rgba(13,20,26,.93);border:1px solid var(--line-2);color:var(--ink-2);cursor:pointer;border-radius:2px;
+}
+.map-tools button:hover{color:var(--ink);border-color:var(--cyan)}
+.map-tools button:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.map-tools button.wide{width:auto;padding:0 11px}
+.map-legend{
+  position:absolute;bottom:14px;right:14px;background:rgba(13,20,26,.93);border:1px solid var(--line-2);
+  border-radius:2px;padding:10px 12px;pointer-events:auto;display:grid;gap:5px;
+}
+.map-legend div{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink-2);text-transform:uppercase}
+.swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.map-scale{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-3);background:rgba(13,20,26,.86);border:1px solid var(--line);padding:5px 9px;border-radius:2px;pointer-events:none}
+@media (max-width:620px){.map-legend{display:none}}
+
+/* ---------- generic grids ---------- */
+.cols{display:grid;gap:14px}
+.cols.c2{grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
+.cols.c3{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:14px;min-width:0}
+.card.accent{border-left:2px solid var(--amber)}
+.card h4{font-size:15px}
+.card .role{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);margin-bottom:9px}
+.card p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
+.chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-2);color:var(--ink-3);border-radius:1px}
+.chip.on{border-color:var(--cyan);color:var(--cyan)}
+.stat{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;padding-block:5px;border-bottom:1px dotted var(--line)}
+.stat:last-child{border-bottom:0}
+.stat span:first-child{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.track{height:3px;background:var(--tile);border-radius:2px;overflow:hidden;margin-top:4px}
+.track i{display:block;height:100%}
+
+/* loadout slots */
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+.slot{border:1px solid var(--line);background:var(--panel-2);padding:10px 11px;border-radius:2px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.slot .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.slot .val{font-size:13px;color:var(--ink);overflow-wrap:anywhere}
+.slot.empty .val{color:var(--ink-3);font-style:italic}
+
+/* operations */
+.oplist{display:flex;flex-direction:column;gap:9px}
+.op{border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:12px 14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center}
+@media (max-width:620px){.op{grid-template-columns:auto minmax(0,1fr);gap:9px}.op .opstate{grid-column:2}}
+.actno{font-family:var(--display);font-size:22px;font-weight:700;color:var(--line-2);line-height:1;letter-spacing:0}
+.op h4{font-size:14.5px}
+.op .where{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+.opstate{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.opstate.done{color:var(--good)}.opstate.live{color:var(--amber)}.opstate.lock{color:var(--ink-3)}
+.objs{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.objs li{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--ink-2)}
+.objs li::before{content:"";width:7px;height:7px;border:1px solid var(--ink-3);margin-top:5px;flex:0 0 auto;transform:rotate(45deg)}
+.objs li.ok{color:var(--ink-3);text-decoration:line-through}
+.objs li.ok::before{background:var(--good);border-color:var(--good)}
+.objs li.opt::before{border-radius:50%;transform:none;border-color:var(--cyan)}
+.objs li.opt{color:var(--cyan)}
+
+/* settings */
+.setrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding-block:9px;border-bottom:1px solid var(--line)}
+.setrow:last-child{border-bottom:0}
+.setrow .name{font-size:13px}
+.setrow .hint{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em;margin-top:1px}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:2px;overflow:hidden}
+.seg button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;background:var(--panel);color:var(--ink-3);border:0;cursor:pointer;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--cyan);color:#0a0e12}
+.seg button:hover:not([aria-pressed="true"]){color:var(--ink)}
+.seg button:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+.presetbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;padding:12px 14px;border:1px solid var(--line-2);background:var(--panel-2);border-radius:2px;margin-bottom:16px}
+.presetbar .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+#presetNote{font-size:12px;color:var(--amber);margin:0;min-height:1.5em;flex:1 1 220px;min-width:0}
+
+/* hud overlay mock */
+.hudmock{position:absolute;inset:0;background:linear-gradient(145deg,#132028,#0a1216 60%,#101a1f)}
+.hudmock::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px)}
+.objtracker{position:absolute;top:0;right:0;padding:16px 18px;max-width:min(300px,62%);text-align:right}
+.objtracker .act{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.objtracker h4{font-size:15px;margin:3px 0 7px}
+.objtracker ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.objtracker li{font-size:12px;color:var(--ink-2);display:flex;gap:8px;align-items:center;flex-direction:row-reverse}
+.objtracker li::after{content:"";width:6px;height:6px;border:1px solid var(--ink-3);transform:rotate(45deg);flex:0 0 auto}
+.objtracker li.ok{color:var(--ink-3)}
+.objtracker li.ok::after{background:var(--good);border-color:var(--good)}
+.compass{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-2);background:rgba(9,14,18,.6);border:1px solid var(--line);padding:4px 14px;border-radius:2px}
+.squadstrip{position:absolute;bottom:16px;left:18px;display:flex;flex-direction:column;gap:5px}
+.squadpip{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;color:var(--ink-2)}
+.squadpip .dot{width:6px;height:6px;border-radius:50%;background:var(--good);flex:0 0 auto}
+.squadpip .dot.warn{background:var(--warn)}
+.stealth{position:absolute;bottom:16px;right:18px;text-align:right}
+.stealth .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3)}
+.stealth .val{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:.09em;color:var(--good)}
+.stealth .meter{width:116px;height:3px;background:var(--tile);margin-top:5px;margin-left:auto;border-radius:2px;overflow:hidden}
+.stealth .meter i{display:block;height:100%;width:18%;background:var(--good)}
+
+/* annotations */
+.notes{margin-top:16px;display:grid;gap:11px}
+.notes[hidden]{display:none!important}
+.note{border:1px solid var(--line);border-left:2px solid var(--cyan);background:rgba(111,168,171,.045);padding:12px 14px;border-radius:2px}
+.note .nh{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
+.note p{margin:0 0 7px;font-size:13px;color:var(--ink-2)}
+.note p:last-child{margin-bottom:0}
+.note code{font-family:var(--mono);font-size:11.5px;background:var(--tile);padding:1px 5px;border-radius:2px;color:var(--ink);overflow-wrap:anywhere}
+.screen-cap{padding-block:14px 0;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
+.screen-cap h2{font-size:19px}
+.screen-cap .ref{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.screen-cap p{margin:0;flex:1 1 100%;font-size:13px;color:var(--ink-2);max-width:72ch}
+
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+footer b{color:var(--ink-2);font-weight:500}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="shell">
+  <header class="masthead">
+    <div class="eyebrow">Operation Shadowline &middot; Stage 2 pre-production</div>
+    <h1>Interface Reference <span>/ Aurelia</span></h1>
+    <p class="lede">The design specification the UMG widgets are built from: six screens, the information each one carries, and the behaviour each one commits to. Every value shown is drawn from the project's own data &mdash; the five regions, the squad, the five acts, and the real scalability groups in <span class="mono">DefaultScalability.ini</span>.</p>
+    <div class="caution">
+      <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6 15 14.4H1L8 1.6Z" fill="none" stroke="#c9893f" stroke-width="1.3"/><path d="M8 6v4" stroke="#c9893f" stroke-width="1.3"/><circle cx="8" cy="12" r=".75" fill="#c9893f"/></svg>
+      <p><strong>This is a design reference, not the game.</strong> It is a web mockup used to settle layout, hierarchy and interaction before any widget is built in Unreal. The game itself is UE5 and has not been compiled &mdash; see <span class="mono">DEVELOPMENT_LOG.md</span>. Nothing here ships.</p>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="spine" role="tablist" aria-label="Interface screens">
+      <button role="tab" id="t-menu" aria-controls="s-menu" aria-selected="true">Main menu</button>
+      <button role="tab" id="t-map" aria-controls="s-map" aria-selected="false">World map</button>
+      <button role="tab" id="t-ops" aria-controls="s-ops" aria-selected="false">Operations</button>
+      <button role="tab" id="t-squad" aria-controls="s-squad" aria-selected="false">Squad</button>
+      <button role="tab" id="t-load" aria-controls="s-load" aria-selected="false">Loadout</button>
+      <button role="tab" id="t-set" aria-controls="s-set" aria-selected="false">Settings</button>
+      <button role="tab" id="t-hud" aria-controls="s-hud" aria-selected="false">HUD</button>
+    </div>
+    <label class="toggle" for="notesToggle">
+      <input type="checkbox" id="notesToggle" checked>
+      <span class="sw" aria-hidden="true"></span>
+      <span>Build notes</span>
+    </label>
+  </div>
+
+  <div class="stage" id="stage">
+    <!-- ============ MAIN MENU ============ -->
+    <section class="screen" id="s-menu" role="tabpanel" aria-labelledby="t-menu">
+      <div class="menu">
+        <div class="menu-left">
+          <div class="op-title"><em>Threshold</em>Operation<br>Shadowline</div>
+          <div class="menu-list" role="menu">
+            <button class="menu-item" role="menuitem" aria-current="true">Continue <small>DAY 12 &middot; 16:42</small></button>
+            <button class="menu-item" role="menuitem">New operation</button>
+            <button class="menu-item" role="menuitem">Squad</button>
+            <button class="menu-item" role="menuitem">Records</button>
+            <button class="menu-item" role="menuitem">Settings</button>
+            <button class="menu-item" role="menuitem">Exit</button>
+          </div>
+        </div>
+        <aside class="menu-right">
+          <div class="panel-h">Operation status</div>
+          <div class="savecard">
+            <h4>Standing Water</h4>
+            <div class="meta">ACT III &middot; VAELMIRE BASIN</div>
+            <div class="meta" style="margin-top:4px">DAY 12 &middot; 16:42 &middot; RAIN, HEAVY</div>
+            <div class="bar-mini"><i style="width:41%"></i></div>
+            <div class="meta" style="margin-top:6px">AURELIA SURVEYED &mdash; 41%</div>
+          </div>
+          <div class="panel-h" style="margin-top:4px">Field summary</div>
+          <dl class="kv">
+            <dt>Team</dt><dd>4 of 4 accounted for</dd>
+            <dt>Region</dt><dd>Vaelmire Basin</dd>
+            <dt>Contacts</dt><dd>None &mdash; 2 days</dd>
+            <dt>Recovered</dt><dd>31 documents, 9 caches</dd>
+            <dt>Survivors</dt><dd>17 located, 11 extracted</dd>
+            <dt>Relay</dt><dd>Offline since day 1</dd>
+          </dl>
+          <div style="margin-top:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;color:var(--ink-3)">BUILD 0.1.0 &middot; UE 5.5 &middot; NOT COMPILED</div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ WORLD MAP ============ -->
+    <section class="screen" id="s-map" role="tabpanel" aria-labelledby="t-map" hidden>
+      <div class="gamebar">
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5 18.5 10 10 18.5 1.5 10Z" fill="none" stroke="#d99a3a" stroke-width="1.2"/><circle cx="10" cy="10" r="2.4" fill="#d99a3a"/></svg>
+          <b>Aurelia</b>
+        </div>
+        <div class="readout">
+          <span>DAY <b>12</b></span><span>16:42</span><span>RAIN, HEAVY</span><span>SURVEYED <b>41%</b></span>
+        </div>
+      </div>
+      <div class="body-flush">
+        <div class="mapwrap" id="mapwrap">
+          <canvas id="mapcanvas"></canvas>
+          <div class="map-hud">
+            <div class="map-panel" id="regionPanel">
+              <div class="sub" id="rpSub">Region 3 of 5</div>
+              <h3 id="rpName">Vaelmire Basin</h3>
+              <p id="rpDesc">Flooded rainforest basin in the Kolda rain shadow's lee. Buttressed trees, hanging moss, a river delta broken by waterfalls. Settlements abandoned to the water and reclaimed by it.</p>
+              <div class="stat" style="margin-top:11px"><span>Surveyed</span><b class="mono" id="rpPct">63%</b></div>
+              <div class="track"><i id="rpBar" style="width:63%;background:var(--vaelmire)"></i></div>
+              <div class="stat"><span>Locations</span><b class="mono" id="rpLoc">7 of 11</b></div>
+              <div class="stat"><span>Weather</span><b class="mono" id="rpWx">Rain, heavy</b></div>
+            </div>
+            <div class="map-scale" id="mapScale">10 KM</div>
+            <div class="map-tools">
+              <button id="zIn" title="Zoom in" aria-label="Zoom in">+</button>
+              <button id="zOut" title="Zoom out" aria-label="Zoom out">&minus;</button>
+              <button id="zReset" class="wide" title="Reset view">FIT</button>
+              <button id="zMe" class="wide" title="Centre on team">TEAM</button>
+            </div>
+            <div class="map-legend">
+              <div><span class="swatch" style="background:var(--amber)"></span>Objective</div>
+              <div><span class="swatch" style="background:var(--cyan)"></span>Discovered</div>
+              <div><span class="swatch" style="background:var(--ink-3)"></span>Rumoured</div>
+              <div><span class="swatch" style="background:#fff"></span>Team</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OPERATIONS ============ -->
+    <section class="screen" id="s-ops" role="tabpanel" aria-labelledby="t-ops" hidden>
+      <div class="gamebar">
+        <div class="brand"><svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="2.5" width="15" height="15" fill="none" stroke="#d99a3a" stroke-width="1.2"/><path d="M6 10h8M6 7h8M6 13h5" stroke="#d99a3a" stroke-width="1"/></svg><b>Operations</b></div>
+        <div class="readout"><span>ACT <b>III</b> OF V</span><span>12 COMPLETE</span><span>4 AVAILABLE</span></div>
+      </div>
+      <div class="body-pad">
+        <div class="oplist">
+          <div class="op"><div class="actno">I</div><div><h4>Landfall</h4><div class="where">Siren Coast &middot; story</div></div><div class="opstate done">Complete</div></div>
+          <div class="op"><div class="actno">II</div><div><h4>The Shadow Line</h4><div class="where">Kolda Range &middot; story</div></div><div class="opstate done">Complete</div></div>
+          <div class="op accent card" style="border:1px solid var(--amber);background:rgba(217,154,58,.05);display:block">
+            <div class="op" style="border:0;background:none;padding:0">
+              <div class="actno" style="color:var(--amber)">III</div>
+              <div><h4>Standing Water</h4><div class="where">Vaelmire Basin &middot; story &middot; active</div></div>
+              <div class="opstate live">In progress</div>
+            </div>
+            <ul class="objs">
+              <li class="ok">Reach the drowned mill at Ferrow's Crossing</li>
+              <li class="ok">Photograph the Vantrell survey markers</li>
+              <li>Find the hydrologist's field notebook</li>
+              <li>Leave the basin without being detected</li>
+              <li class="opt">Optional &mdash; locate the three missing dredge crew</li>
+              <li class="opt">Optional &mdash; recover the relay log before it floods</li>
+            </ul>
+          </div>
+          <div class="op"><div class="actno">IV</div><div><h4>Ash Record</h4><div class="where">Ashen Flats &middot; story</div></div><div class="opstate lock">Act IV</div></div>
+          <div class="op"><div class="actno">V</div><div><h4>Meridian</h4><div class="where">Meridian Works &middot; story</div></div><div class="opstate lock">Act V</div></div>
+          <div class="op"><div class="actno" style="font-size:14px;letter-spacing:.1em">SIDE</div><div><h4>The Quiet Terraces</h4><div class="where">Kolda Range &middot; investigation</div></div><div class="opstate live">Available</div></div>
+          <div class="op"><div class="actno" style="font-size:14px;letter-spacing:.1em">SIDE</div><div><h4>Nothing on the Water</h4><div class="where">Siren Coast &middot; rescue</div></div><div class="opstate live">Available</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SQUAD ============ -->
+    <section class="screen" id="s-squad" role="tabpanel" aria-labelledby="t-squad" hidden>
+      <div class="gamebar">
+        <div class="brand"><svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3" fill="none" stroke="#d99a3a" stroke-width="1.2"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="#d99a3a" stroke-width="1.2"/></svg><b>Squad</b></div>
+        <div class="readout"><span>4 OF 4 ACCOUNTED FOR</span><span>FORMATION <b>LOOSE</b></span><span>SPACING <b>35 M</b></span></div>
+      </div>
+      <div class="body-pad">
+        <div class="cols c2">
+          <div class="card accent">
+            <h4>You</h4><div class="role">Team lead</div>
+            <p>Threshold reconnaissance. Decisions on the ground are yours, and the team will tell you when they disagree.</p>
+            <div class="chips"><span class="chip on">Lead</span><span class="chip">Appearance</span><span class="chip">Loadout</span></div>
+          </div>
+          <div class="card">
+            <h4>Nadia Ferreiro</h4><div class="role">Hydrologist &middot; field engineer</div>
+            <p>Dry, impatient, allergic to speculation. Wants data before she wants an opinion. Reads water the way other people read a road map.</p>
+            <div class="stat" style="margin-top:11px"><span>Survey</span><span class="mono">Tier 3</span></div><div class="track"><i style="width:72%;background:var(--cyan)"></i></div>
+            <div class="stat"><span>Engineering</span><span class="mono">Tier 2</span></div><div class="track"><i style="width:44%;background:var(--cyan)"></i></div>
+            <div class="chips"><span class="chip on">Open sluices</span><span class="chip on">Read currents</span><span class="chip">Bypass panels</span></div>
+          </div>
+          <div class="card">
+            <h4>Tomas &ldquo;Kip&rdquo; Okonkwo</h4><div class="role">Communications &middot; drone operator</div>
+            <p>Youngest, talks to fill silence, brilliant and underconfident. Will find the signal nobody else thought to look for, then ask whether that was alright.</p>
+            <div class="stat" style="margin-top:11px"><span>Signals</span><span class="mono">Tier 4</span></div><div class="track"><i style="width:88%;background:var(--cyan)"></i></div>
+            <div class="stat"><span>Drone range</span><span class="mono">410 m</span></div><div class="track"><i style="width:55%;background:var(--cyan)"></i></div>
+            <div class="chips"><span class="chip on">Intercept traffic</span><span class="chip on">Aerial sweep</span><span class="chip">Spoof beacons</span></div>
+          </div>
+          <div class="card">
+            <h4>Sela Varga</h4><div class="role">Medic &middot; ex-mountain rescue</div>
+            <p>Oldest, quietest, has done this before in worse places. The team's conscience, and the one person who will say no to you outright.</p>
+            <div class="stat" style="margin-top:11px"><span>Medical</span><span class="mono">Tier 4</span></div><div class="track"><i style="width:91%;background:var(--cyan)"></i></div>
+            <div class="stat"><span>Climbing</span><span class="mono">Tier 3</span></div><div class="track"><i style="width:68%;background:var(--cyan)"></i></div>
+            <div class="chips"><span class="chip on">Revive</span><span class="chip on">Rope descent</span><span class="chip on">Stabilise survivor</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="panel-h">Standing orders</div>
+          <div class="cols c3" style="margin-top:11px">
+            <div><div class="slot"><span class="lbl">Formation</span><span class="val">Loose column</span></div></div>
+            <div><div class="slot"><span class="lbl">Spacing</span><span class="val">35 m</span></div></div>
+            <div><div class="slot"><span class="lbl">On contact</span><span class="val">Break and hold</span></div></div>
+            <div><div class="slot"><span class="lbl">Movement</span><span class="val">Match my pace</span></div></div>
+            <div><div class="slot"><span class="lbl">Chatter</span><span class="val">Essential only</span></div></div>
+            <div><div class="slot"><span class="lbl">Regroup point</span><span class="val">Last marked cache</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LOADOUT ============ -->
+    <section class="screen" id="s-load" role="tabpanel" aria-labelledby="t-load" hidden>
+      <div class="gamebar">
+        <div class="brand"><svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 6V4.5A1.5 1.5 0 0 1 7.5 3h5A1.5 1.5 0 0 1 14 4.5V6" fill="none" stroke="#d99a3a" stroke-width="1.2"/><rect x="3" y="6" width="14" height="11" fill="none" stroke="#d99a3a" stroke-width="1.2"/></svg><b>Loadout</b></div>
+        <div class="readout"><span>CARRIED <b>11.4 KG</b></span><span>CAPACITY <b>18 KG</b></span><span>PROFILE <b>LOW VISIBILITY</b></span></div>
+      </div>
+      <div class="body-pad">
+        <div class="cols c2">
+          <div class="card">
+            <div class="panel-h">Appearance</div>
+            <div class="slots" style="margin-top:11px">
+              <div class="slot"><span class="lbl">Head</span><span class="val">Boonie, faded olive</span></div>
+              <div class="slot"><span class="lbl">Face</span><span class="val">Preset 04, scarred</span></div>
+              <div class="slot"><span class="lbl">Torso</span><span class="val">Field shell, basin grey</span></div>
+              <div class="slot"><span class="lbl">Legs</span><span class="val">Reinforced trousers</span></div>
+              <div class="slot"><span class="lbl">Boots</span><span class="val">Wet-weather, worn</span></div>
+              <div class="slot"><span class="lbl">Backpack</span><span class="val">48 L survey frame</span></div>
+              <div class="slot"><span class="lbl">Pack add-ons</span><span class="val">Side pouches, roll top</span></div>
+              <div class="slot empty"><span class="lbl">Overlayer</span><span class="val">None</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="panel-h">Field equipment &mdash; non-lethal</div>
+            <div class="slots" style="margin-top:11px">
+              <div class="slot"><span class="lbl">Primary tool</span><span class="val">Spotting scope, 20&times;</span></div>
+              <div class="slot"><span class="lbl">Secondary</span><span class="val">Signal sniffer</span></div>
+              <div class="slot"><span class="lbl">Aerial</span><span class="val">Hand drone, Mk II</span></div>
+              <div class="slot"><span class="lbl">Access</span><span class="val">Door shim set</span></div>
+              <div class="slot"><span class="lbl">Diversion</span><span class="val">Acoustic emitter &times;3</span></div>
+              <div class="slot"><span class="lbl">Light</span><span class="val">Red-filter headlamp</span></div>
+              <div class="slot"><span class="lbl">Medical</span><span class="val">Trauma kit, compact</span></div>
+              <div class="slot empty"><span class="lbl">Reserved</span><span class="val">Empty &mdash; 6.6 kg spare</span></div>
+            </div>
+            <p style="margin-top:12px;font-size:12.5px;color:var(--ink-3)">Threshold carries no weapons. Every tool here observes, opens, distracts or treats &mdash; the stealth loop has no lethal branch to fall back on.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SETTINGS ============ -->
+    <section class="screen" id="s-set" role="tabpanel" aria-labelledby="t-set" hidden>
+      <div class="gamebar">
+        <div class="brand"><svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3" fill="none" stroke="#d99a3a" stroke-width="1.2"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.3 4.3l2.1 2.1M13.6 13.6l2.1 2.1M15.7 4.3l-2.1 2.1M6.4 13.6l-2.1 2.1" stroke="#d99a3a" stroke-width="1.1"/></svg><b>Graphics</b></div>
+        <div class="readout"><span>RHI <b>DX12 SM6</b></span><span>GPU <b>DETECTED</b></span><span>LUMEN <b id="lumenState">HW CAPABLE</b></span></div>
+      </div>
+      <div class="body-pad">
+        <div class="presetbar">
+          <span class="lbl">Preset</span>
+          <div class="seg" id="presetSeg">
+            <button data-lvl="0">Low</button><button data-lvl="1">Medium</button>
+            <button data-lvl="2" aria-pressed="true">High</button><button data-lvl="3">Ultra</button>
+            <button data-lvl="-1" id="customBtn">Custom</button>
+          </div>
+          <p id="presetNote">Every group at High. Changing any one of them drops the preset to Custom.</p>
+        </div>
+        <div class="cols c2">
+          <div class="card">
+            <div class="panel-h">Scalability groups</div>
+            <div id="groupRows"></div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="panel-h">Display</div>
+              <div class="setrow"><div><div class="name">Resolution</div><div class="hint">NATIVE 2560 &times; 1440</div></div><div class="seg"><button>1080p</button><button aria-pressed="true">1440p</button><button>4K</button></div></div>
+              <div class="setrow"><div><div class="name">Window mode</div><div class="hint">BORDERLESS RECOMMENDED</div></div><div class="seg"><button aria-pressed="true">Borderless</button><button>Full</button><button>Window</button></div></div>
+              <div class="setrow"><div><div class="name">Frame rate cap</div><div class="hint">r.MaxFPS</div></div><div class="seg"><button>60</button><button aria-pressed="true">120</button><button>144</button><button>Off</button></div></div>
+              <div class="setrow"><div><div class="name">Screen percentage</div><div class="hint">PRESERVED ACROSS PRESET CHANGES</div></div><div class="seg"><button>67</button><button>80</button><button aria-pressed="true">100</button></div></div>
+              <div class="setrow"><div><div class="name">V-Sync</div><div class="hint">bUseVSync</div></div><div class="seg"><button>On</button><button aria-pressed="true">Off</button></div></div>
+            </div>
+            <div class="card" style="margin-top:14px">
+              <div class="panel-h">Post processing</div>
+              <div class="setrow"><div><div class="name">Motion blur</div><div class="hint">r.MotionBlurQuality</div></div><div class="seg"><button aria-pressed="true">On</button><button>Off</button></div></div>
+              <div class="setrow"><div><div class="name">Motion blur amount</div><div class="hint">r.MotionBlur.Amount &mdash; 0.35</div></div><div class="seg"><button>0.0</button><button aria-pressed="true">0.35</button><button>0.7</button></div></div>
+              <div class="setrow"><div><div class="name">Hardware ray tracing</div><div class="hint">REQUIRES SM6 &mdash; OFF BY DEFAULT</div></div><div class="seg"><button>On</button><button aria-pressed="true">Off</button></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HUD ============ -->
+    <section class="screen" id="s-hud" role="tabpanel" aria-labelledby="t-hud" hidden>
+      <div class="hudmock">
+        <div class="compass"><span>&middot; &middot; &middot; N &middot; &middot; &middot; 018&deg; &middot; &middot; &middot; NE &middot; &middot; &middot;</span></div>
+        <div class="objtracker">
+          <div class="act">Act III &middot; Standing Water</div>
+          <h4>Find the field notebook</h4>
+          <ul>
+            <li class="ok">Reach the drowned mill</li>
+            <li class="ok">Photograph the survey markers</li>
+            <li>Search the upper office &mdash; 240 m</li>
+          </ul>
+        </div>
+        <div class="squadstrip">
+          <div class="squadpip"><span class="dot"></span>FERREIRO &middot; 28 M</div>
+          <div class="squadpip"><span class="dot"></span>OKONKWO &middot; 41 M</div>
+          <div class="squadpip"><span class="dot warn"></span>VARGA &middot; 96 M &middot; LAGGING</div>
+        </div>
+        <div class="stealth">
+          <div class="lbl">Concealment</div>
+          <div class="val">UNSEEN</div>
+          <div class="meter"><i></i></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="screen-cap">
+    <h2 id="capTitle">Main menu</h2>
+    <span class="ref mono" id="capRef">WBP_MainMenu</span>
+    <p id="capDesc">The first thing anyone sees, so it carries the operation's current state rather than a static splash: which act, which region, what the weather is doing, how much of Aurelia has been surveyed. Continue is the default focus.</p>
+  </div>
+
+  <div class="notes" id="notes"></div>
+
+  <footer>
+    <p><b>Where this fits.</b> Stage 2 of ten. The screens above become <span class="mono">WBP_*</span> widgets under <span class="mono">Content/Shadowline/UI/</span>, driven by CommonUI so a gamepad and a mouse both work without separate layouts. Nothing in this page is Unreal code; it is the agreed target that the widgets are measured against.</p>
+    <p style="margin-top:9px"><b>Original IP.</b> Aurelia, Threshold, Vantrell Continental and every person named here are invented for this project. No names, marks, mission titles or interface designs are taken from any existing game.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- screen switching ---------------- */
+  var CAPS = {
+    "s-menu":["Main menu","WBP_MainMenu","The first thing anyone sees, so it carries the operation's current state rather than a static splash: which act, which region, what the weather is doing, how much of Aurelia has been surveyed. Continue is the default focus."],
+    "s-map":["World map","WBP_WorldMap","The screen that has to carry a 70 km island. Drag to pan, pinch or scroll to zoom, tap a region to read it. Discovered locations are solid, rumoured ones hollow, and the survey percentage is the exploration reward in its own right."],
+    "s-ops":["Operations","WBP_Operations","Five acts, each tied to a region, with side operations interleaved. The active operation is the only one expanded, and optional objectives are visually distinct because they are genuinely optional."],
+    "s-squad":["Squad","WBP_Squad","Three companions with specialisations that gate what the team can do, not how much damage it deals. Standing orders are set here and are the only squad commands in the game: formation, spacing, what to do on contact."],
+    "s-load":["Loadout","WBP_Loadout","Appearance and equipment on one screen, because in this game they are the same decision: what you carry changes your silhouette. Weight against capacity is the only hard constraint."],
+    "s-set":["Settings","WBP_Settings_Graphics","The screen that makes the scalability work visible. Presets set every group at once; touching any single group drops the preset to Custom, which is exactly what UShadowlineGameUserSettings::RefreshQualityPreset does in C++."],
+    "s-hud":["In-game HUD","WBP_HUD","Deliberately sparse. An objective tracker that can be read in one glance, companion distances, a compass, and the concealment state — which is the only number that matters moment to moment."]
+  };
+  var NOTES = {
+    "s-menu":[
+      ["Data binding","The status panel reads from the save header, not from a loaded world, so the menu never needs the level streamed in. Fields: act, region, in-game day and clock, weather state, survey percentage, squad roster.","Region and weather names come from <code>UShadowlineRegionDefinition::DisplayName</code> and the <code>EShadowlineWeather</code> enum, so the menu and the world can never disagree about where you are."],
+      ["Focus and input","Built on CommonUI so the same widget takes gamepad and mouse without a second layout. Continue holds focus on open; the left border and amber fill are the focus visual, not a hover-only state."],
+      ["Background","Intended as a slow, letterboxed camera move over the current region rather than a still image — a level sequence rendered to a render target, paused while any submenu is open."]
+    ],
+    "s-map":[
+      ["This is the real spec","Pan, pinch-zoom, scroll-zoom and region selection above are functional, because the feel of them is the thing that needs agreeing. Zoom clamps to a fit-to-island minimum and roughly 6× maximum; panning clamps so the island cannot be dragged off-screen."],
+      ["Implementation","In Unreal this is a <code>UCanvasPanel</code> over a render-target capture of the island, not a hand-drawn texture: a <code>SceneCapture2D</code> on an orthographic top-down camera, baked once per region as it is discovered. Markers are a pooled list of widgets positioned by projecting world coordinates into map space."],
+      ["Exploration","Survey percentage is per region and drives the regional panel's bar. It is granted by reaching overlooks and discovering locations — the reconnaissance loop paying out in the map itself."]
+    ],
+    "s-ops":[
+      ["Structure","Acts are fixed and ordered; side operations are not, and are listed by region so the map and this screen can cross-reference. Only one story operation is active at a time."],
+      ["Objectives","Required objectives are diamonds, optional ones circles in cyan. The distinction is load-bearing: optional objectives are how the investigation missions reward curiosity, and they must never read as a checklist the player is failing."],
+      ["Not yet designed","Mission failure. Threshold has no fail state that makes sense as a death screen — detection should escalate, not end. This is an open design question recorded in <code>UNFINISHED_FEATURES.md</code>."]
+    ],
+    "s-squad":[
+      ["Progression","Companion tiers gate capability, never combat strength. Tier 3 Survey lets Ferreiro read a current the player cannot; Tier 4 Signals lets Okonkwo intercept traffic that is otherwise noise. Progression opens routes, not damage numbers."],
+      ["Standing orders","The complete squad command set: formation, spacing, contact behaviour, movement pace, chatter level, regroup point. Deliberately abstract and game-oriented — no real-world procedures."],
+      ["Dialogue","Contextual lines are authored per companion per region and per weather state. The data for this belongs in a companion data asset alongside the region definitions, not in Blueprints."]
+    ],
+    "s-load":[
+      ["Appearance and equipment are one screen","Because they are one decision. Carried volume changes the character's silhouette, and silhouette is a stealth variable. MetaHuman supplies the face; everything else is modular mesh slots on the same skeleton."],
+      ["Constraint","Weight against capacity is the only limit. There is no grid inventory: a reconnaissance team's problem is what to leave behind, not how to tessellate a backpack."],
+      ["Non-lethal by design","Every slot observes, opens, distracts or treats. This is a mandate constraint from the fiction, and it is also what keeps the stealth loop from having a lethal escape hatch."]
+    ],
+    "s-set":[
+      ["Preset behaviour is real","Try it: set a preset, then change one group. The preset drops to Custom. That mirrors <code>UShadowlineGameUserSettings::RefreshQualityPreset</code>, which reads <code>Scalability::FQualityLevels::GetSingleQualityLevel()</code> and returns Custom when the groups no longer share a level."],
+      ["Low does not require Lumen","<code>GlobalIlluminationQuality@0</code> in <code>DefaultScalability.ini</code> sets <code>r.DynamicGlobalIlluminationMethod=0</code> and falls back to screen-space GI. This is the single decision that lets the game run on hardware without Shader Model 6, and the settings screen says so in plain words rather than hiding it."],
+      ["Screen percentage is separate","<code>SetFromSingleQualityLevel</code> rewrites <code>ResolutionQuality</code>, which would silently reset the player's screen-percentage choice every time they changed preset. The C++ preserves and restores it; this screen keeps it in the Display group to make that separation obvious."],
+      ["Honest about hardware","The top bar reports the detected RHI and whether hardware ray tracing is available, from <code>IsHardwareRayTracingCapable()</code>. Options the GPU cannot do are disabled with the reason shown, never silently ignored."]
+    ],
+    "s-hud":[
+      ["Sparseness is the design","No minimap, no ammo, no health bar. The player's attention belongs on the world, and the one thing they need continuously is whether they are currently concealed."],
+      ["Concealment","Reads UNSEEN / NOTICED / SEARCHED / TRACKED from the stealth model. Nothing computes this yet — the player visibility model is stage 7 and is the largest unbuilt system in the project."],
+      ["Companion pips","Distance and state only. A companion lagging past the standing spacing is the warning case, because in practice that is what breaks a stealth approach."]
+    ]
+  };
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  var notesBox = document.getElementById('notes');
+  var notesToggle = document.getElementById('notesToggle');
+  var current = 's-menu';
+
+  function renderNotes(){
+    var list = NOTES[current] || [];
+    notesBox.innerHTML = list.map(function(n){
+      return '<div class="note"><div class="nh">' + n[0] + '</div>' +
+        n.slice(1).map(function(p){ return '<p>' + p + '</p>'; }).join('') + '</div>';
+    }).join('');
+    notesBox.hidden = !notesToggle.checked;
+  }
+
+  function show(id){
+    current = id;
+    tabs.forEach(function(t){
+      var on = t.getAttribute('aria-controls') === id;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    var cap = CAPS[id];
+    if (cap){
+      document.getElementById('capTitle').textContent = cap[0];
+      document.getElementById('capRef').textContent = cap[1];
+      document.getElementById('capDesc').textContent = cap[2];
+    }
+    renderNotes();
+    if (id === 's-map') { requestAnimationFrame(sizeMap); }
+  }
+
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ show(t.getAttribute('aria-controls')); });
+  });
+  notesToggle.addEventListener('change', renderNotes);
+
+  /* ---------------- settings: preset / group interplay ---------------- */
+  var GROUPS = [
+    ['View distance','r.ViewDistanceScale, foliage.LODDistanceScale'],
+    ['Shadows','r.Shadow.Virtual.Enable, r.Shadow.MaxResolution'],
+    ['Global illumination','r.DynamicGlobalIlluminationMethod &mdash; 0 at Low'],
+    ['Reflections','r.ReflectionMethod, r.Lumen.Reflections.Allow'],
+    ['Anti-aliasing','r.AntiAliasingMethod &mdash; 4 (TSR) at High+'],
+    ['Textures','r.Streaming.PoolSize, r.MaxAnisotropy'],
+    ['Effects','r.DetailMode, r.Nanite.MaxPixelsPerEdge'],
+    ['Post processing','r.BloomQuality, r.DepthOfFieldQuality'],
+    ['Foliage','foliage.DensityScale, grass.DensityScale'],
+    ['Shading','r.SSS.Quality, r.SSS.SampleSet']
+  ];
+  var LVL = ['Low','Medium','High','Ultra'];
+  var levels = GROUPS.map(function(){ return 2; });
+  var rowsEl = document.getElementById('groupRows');
+  var presetSeg = document.getElementById('presetSeg');
+  var presetNote = document.getElementById('presetNote');
+
+  rowsEl.innerHTML = GROUPS.map(function(g,i){
+    return '<div class="setrow"><div><div class="name">' + g[0] + '</div><div class="hint">' + g[1] + '</div></div>' +
+      '<div class="seg" data-group="' + i + '">' +
+      LVL.map(function(l,j){
+        return '<button data-lvl="' + j + '"' + (j===2?' aria-pressed="true"':'') + '>' + l + '</button>';
+      }).join('') + '</div></div>';
+  }).join('');
+
+  function singleLevel(){
+    var first = levels[0];
+    for (var i=1;i<levels.length;i++){ if (levels[i] !== first) return -1; }
+    return first;
+  }
+
+  function paint(){
+    rowsEl.querySelectorAll('.seg').forEach(function(seg){
+      var gi = parseInt(seg.getAttribute('data-group'), 10);
+      seg.querySelectorAll('button').forEach(function(b){
+        var on = parseInt(b.getAttribute('data-lvl'), 10) === levels[gi];
+        if (on) { b.setAttribute('aria-pressed','true'); } else { b.removeAttribute('aria-pressed'); }
+      });
+    });
+    var single = singleLevel();
+    presetSeg.querySelectorAll('button').forEach(function(b){
+      var on = parseInt(b.getAttribute('data-lvl'), 10) === single;
+      if (on) { b.setAttribute('aria-pressed','true'); } else { b.removeAttribute('aria-pressed'); }
+    });
+    if (single === -1){
+      presetNote.textContent = 'Custom — the groups no longer share one level. GetSingleQualityLevel() returns -1.';
+    } else if (single === 0){
+      presetNote.innerHTML = 'Every group at Low. Global illumination falls back to screen-space, so <strong>Lumen is off entirely</strong> — this tier runs without Shader Model 6.';
+    } else {
+      presetNote.textContent = 'Every group at ' + LVL[single] + '. Changing any one of them drops the preset to Custom.';
+    }
+    document.getElementById('lumenState').textContent = (levels[2] === 0) ? 'OFF (LOW)' : 'HW CAPABLE';
+  }
+
+  rowsEl.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-lvl]');
+    if (!b) return;
+    var seg = b.closest('.seg');
+    levels[parseInt(seg.getAttribute('data-group'),10)] = parseInt(b.getAttribute('data-lvl'),10);
+    paint();
+  });
+  presetSeg.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-lvl]');
+    if (!b) return;
+    var lvl = parseInt(b.getAttribute('data-lvl'),10);
+    if (lvl < 0) return;             // Custom is a state, not an action — mirrors ApplyQualityPreset
+    levels = levels.map(function(){ return lvl; });
+    paint();
+  });
+  paint();
+
+  /* ---------------- world map ---------------- */
+  var REGIONS = [
+    { key:'kolda',    name:'Kolda Range',    idx:1, colour:'#51708c', a:-2.36, b:-0.79,
+      desc:'Granite massif, snow above 1,800 m, black pine, terraced villages on the valley shoulders and a single switchback road. Cold shadows, hard raking light, wind that never stops.',
+      pct:78, loc:'9 of 12', wx:'Snow, light' },
+    { key:'siren',    name:'Siren Coast',    idx:2, colour:'#5f8c99', a:-0.79, b:0.79,
+      desc:'Limestone cliffs, pale beaches, a working fishing port and three offshore stacks. The only part of Aurelia that still looks inhabited.',
+      pct:92, loc:'11 of 12', wx:'Clear' },
+    { key:'vaelmire', name:'Vaelmire Basin', idx:3, colour:'#4e7a5c', a:0.79, b:2.36,
+      desc:"Flooded rainforest basin. Buttressed trees, hanging moss, a river delta broken by waterfalls. Settlements abandoned to the water and reclaimed by it.",
+      pct:63, loc:'7 of 11', wx:'Rain, heavy' },
+    { key:'ashen',    name:'Ashen Flats',    idx:4, colour:'#8a7a63', a:2.36, b:3.93,
+      desc:"Volcanic desert in the Kolda rain shadow. Grey-black dunes over basalt, wind-carved mesas, and an extraction field of pipe runs and sun-bleached prefabs abandoned in 1987.",
+      pct:21, loc:'3 of 14', wx:'Dust storm' },
+    { key:'meridian', name:'Meridian Works', idx:5, colour:'#8a6a52', a:0, b:0,
+      desc:'The caldera floor, industrialised: geothermal plant, ore processing, a research annex, a rail spur and worker housing. Every story thread eventually points here.',
+      pct:8, loc:'1 of 16', wx:'Overcast' }
+  ];
+
+  var MARKERS = [
+    { x:500, y:300, r:'kolda',   t:'obj',  n:'Kolda relay station' },
+    { x:392, y:400, r:'kolda',   t:'disc', n:'Terraces of Hale' },
+    { x:604, y:362, r:'kolda',   t:'disc', n:'Switchback bridge' },
+    { x:470, y:226, r:'kolda',   t:'rum',  n:'Summit cairn' },
+    { x:812, y:646, r:'siren',   t:'disc', n:'Port Calloway' },
+    { x:840, y:792, r:'siren',   t:'disc', n:'The Three Stacks' },
+    { x:768, y:540, r:'siren',   t:'disc', n:'Landfall beach' },
+    { x:560, y:1070,r:'vaelmire',t:'obj',  n:"Ferrow's Crossing" },
+    { x:448, y:1000,r:'vaelmire',t:'disc', n:'Drowned mill' },
+    { x:654, y:1122,r:'vaelmire',t:'rum',  n:'Delta camp' },
+    { x:236, y:742, r:'ashen',   t:'disc', n:'Extraction field 1' },
+    { x:200, y:900, r:'ashen',   t:'rum',  n:'Wind-cut mesas' },
+    { x:500, y:700, r:'meridian',t:'disc', n:'Meridian Works' }
+  ];
+  var TEAM = { x:508, y:1030 };
+
+  var cv = document.getElementById('mapcanvas');
+  var wrap = document.getElementById('mapwrap');
+  var ctx = cv.getContext('2d');
+  var view = { s:1, x:0, y:0, fit:1 };
+  var active = REGIONS[2];
+  var outline = null;
+
+  function buildOutline(){
+    var pts = [], N = 190;
+    for (var i=0;i<N;i++){
+      var t = i/N*Math.PI*2;
+      var r = 1
+        + 0.150*Math.sin(3*t+0.70)
+        + 0.095*Math.sin(5*t+2.10)
+        + 0.055*Math.sin(8*t+4.30)
+        + 0.030*Math.sin(13*t+1.20);
+      r -= 0.145*Math.exp(-Math.pow((t-1.05)/0.30,2));   // bay on the east coast
+      r -= 0.105*Math.exp(-Math.pow((t-4.30)/0.26,2));   // inlet on the west
+      r -= 0.070*Math.exp(-Math.pow((t-2.55)/0.34,2));   // river mouth, south-west
+      pts.push([500 + 352*r*Math.cos(t), 700 + 548*r*Math.sin(t)]);
+    }
+    return pts;
+  }
+
+  function pathOutline(scale){
+    scale = scale || 1;
+    ctx.beginPath();
+    for (var i=0;i<outline.length;i++){
+      var x = 500 + (outline[i][0]-500)*scale;
+      var y = 700 + (outline[i][1]-700)*scale;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }
+
+  function sizeMap(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = wrap.clientWidth, h = wrap.clientHeight;
+    if (!w || !h) return;
+    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    view.fit = Math.min(w/1050, h/1480);
+    if (view.s < view.fit) { view.s = view.fit; }
+    clampPan(w,h);
+    draw();
+  }
+
+  function clampPan(w,h){
+    w = w || wrap.clientWidth; h = h || wrap.clientHeight;
+    var mw = 1000*view.s, mh = 1400*view.s;
+    var margin = 0.22;
+    view.x = Math.min(Math.max(view.x, w - mw*(1+margin)), mw*margin);
+    view.y = Math.min(Math.max(view.y, h - mh*(1+margin)), mh*margin);
+  }
+
+  function fit(){
+    var w = wrap.clientWidth, h = wrap.clientHeight;
+    view.s = view.fit;
+    view.x = (w - 1000*view.s)/2;
+    view.y = (h - 1400*view.s)/2;
+    draw();
+  }
+
+  function centreOn(px,py){
+    var w = wrap.clientWidth, h = wrap.clientHeight;
+    view.s = Math.min(Math.max(view.fit*2.4, view.fit), 6);
+    view.x = w/2 - px*view.s;
+    view.y = h/2 - py*view.s;
+    clampPan(w,h); draw();
+  }
+
+  function draw(){
+    var w = wrap.clientWidth, h = wrap.clientHeight;
+    if (!w || !h) return;
+    ctx.clearRect(0,0,w,h);
+
+    // sea
+    ctx.fillStyle = '#091318';
+    ctx.fillRect(0,0,w,h);
+
+    ctx.save();
+    ctx.translate(view.x, view.y);
+    ctx.scale(view.s, view.s);
+
+    // survey grid over the sea
+    ctx.strokeStyle = 'rgba(111,168,171,.085)';
+    ctx.lineWidth = 1/view.s;
+    for (var gx=-200; gx<=1200; gx+=100){
+      ctx.beginPath(); ctx.moveTo(gx,-300); ctx.lineTo(gx,1700); ctx.stroke();
+    }
+    for (var gy=-300; gy<=1700; gy+=100){
+      ctx.beginPath(); ctx.moveTo(-200,gy); ctx.lineTo(1200,gy); ctx.stroke();
+    }
+
+    // coastal halo
+    ctx.save();
+    ctx.strokeStyle = 'rgba(111,168,171,.20)';
+    for (var k=1; k<=3; k++){
+      ctx.lineWidth = 1.2/view.s;
+      pathOutline(1 + k*0.035); ctx.stroke();
+    }
+    ctx.restore();
+
+    // island body, clipped for the regions
+    ctx.save();
+    pathOutline(1);
+    ctx.clip();
+
+    ctx.fillStyle = '#121a1d';
+    ctx.fillRect(-200,-300,1400,2000);
+
+    // regional wedges from the caldera
+    REGIONS.forEach(function(rg){
+      if (rg.key === 'meridian') return;
+      ctx.beginPath();
+      ctx.moveTo(500,700);
+      ctx.arc(500,700, 1500, rg.a, rg.b);
+      ctx.closePath();
+      ctx.fillStyle = hexA(rg.colour, rg === active ? 0.42 : 0.24);
+      ctx.fill();
+    });
+
+    // caldera: Meridian Works
+    var mg = ctx.createRadialGradient(500,700,10,500,700,250);
+    mg.addColorStop(0, hexA('#8a6a52', active.key==='meridian'?0.62:0.44));
+    mg.addColorStop(1, hexA('#8a6a52', 0));
+    ctx.fillStyle = mg;
+    ctx.beginPath(); ctx.arc(500,700,250,0,Math.PI*2); ctx.fill();
+
+    // elevation banding in the north
+    ctx.strokeStyle = 'rgba(233,229,218,.14)';
+    for (var e=1;e<=5;e++){
+      ctx.lineWidth = 1/view.s;
+      ctx.beginPath();
+      ctx.ellipse(500, 390, 230 - e*34, 150 - e*22, 0.18, 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    // rivers in the south
+    ctx.strokeStyle = 'rgba(111,168,171,.42)';
+    ctx.lineWidth = 2.4/view.s;
+    [[500,760,470,980,560,1180],[500,760,600,960,700,1120],[500,760,400,920,330,1060]].forEach(function(c){
+      ctx.beginPath(); ctx.moveTo(c[0],c[1]); ctx.bezierCurveTo(c[2],c[3],c[2],c[3],c[4],c[5]); ctx.stroke();
+    });
+
+    // dune hatching in the west
+    ctx.strokeStyle = 'rgba(138,122,99,.26)';
+    ctx.lineWidth = 1.4/view.s;
+    for (var d=0; d<16; d++){
+      var dy = 640 + d*34;
+      ctx.beginPath();
+      ctx.moveTo(150, dy);
+      ctx.quadraticCurveTo(250, dy-24, 360, dy);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // coastline
+    ctx.strokeStyle = 'rgba(233,229,218,.52)';
+    ctx.lineWidth = 1.6/view.s;
+    pathOutline(1); ctx.stroke();
+
+    // region boundaries
+    ctx.strokeStyle = 'rgba(233,229,218,.16)';
+    ctx.lineWidth = 1/view.s;
+    ctx.setLineDash([7/view.s, 6/view.s]);
+    REGIONS.forEach(function(rg){
+      if (rg.key === 'meridian') return;
+      ctx.beginPath(); ctx.moveTo(500,700);
+      ctx.lineTo(500 + 700*Math.cos(rg.a), 700 + 700*Math.sin(rg.a));
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // region labels
+    ctx.textAlign = 'center';
+    REGIONS.forEach(function(rg){
+      var lx, ly;
+      if (rg.key === 'meridian'){ lx = 500; ly = 700; }
+      else {
+        var mid = (rg.a + rg.b)/2;
+        lx = 500 + 400*Math.cos(mid); ly = 700 + 560*Math.sin(mid);
+      }
+      var fs = Math.max(11, 17/view.s);
+      ctx.font = '600 ' + fs + 'px "Archivo Narrow", sans-serif';
+      ctx.fillStyle = (rg === active) ? '#e9e5da' : 'rgba(233,229,218,.46)';
+      ctx.fillText(rg.name.toUpperCase(), lx, ly);
+      if (rg === active){
+        ctx.font = '400 ' + Math.max(8, 10/view.s) + 'px "IBM Plex Mono", monospace';
+        ctx.fillStyle = 'rgba(217,154,58,.9)';
+        ctx.fillText(rg.pct + '% SURVEYED', lx, ly + fs*1.15);
+      }
+    });
+
+    // markers
+    MARKERS.forEach(function(m){
+      var rad = Math.max(3.4, 6/view.s);
+      ctx.beginPath(); ctx.arc(m.x, m.y, rad, 0, Math.PI*2);
+      if (m.t === 'obj'){
+        ctx.fillStyle = '#d99a3a'; ctx.fill();
+        ctx.strokeStyle = 'rgba(217,154,58,.42)'; ctx.lineWidth = 1.4/view.s;
+        ctx.beginPath(); ctx.arc(m.x, m.y, rad*2.2, 0, Math.PI*2); ctx.stroke();
+      } else if (m.t === 'disc'){
+        ctx.fillStyle = '#6fa8ab'; ctx.fill();
+      } else {
+        ctx.strokeStyle = 'rgba(149,162,170,.8)'; ctx.lineWidth = 1.4/view.s; ctx.stroke();
+      }
+      if (view.s > view.fit*1.7){
+        ctx.font = '400 ' + Math.max(8, 10.5/view.s) + 'px "IBM Plex Mono", monospace';
+        ctx.fillStyle = 'rgba(233,229,218,.72)';
+        ctx.textAlign = 'left';
+        ctx.fillText(m.n.toUpperCase(), m.x + rad*2.2, m.y + rad*0.8);
+        ctx.textAlign = 'center';
+      }
+    });
+
+    // team position
+    ctx.save();
+    ctx.translate(TEAM.x, TEAM.y);
+    var tr = Math.max(4, 7/view.s);
+    ctx.beginPath(); ctx.moveTo(0,-tr*1.5); ctx.lineTo(tr,tr); ctx.lineTo(0,tr*0.45); ctx.lineTo(-tr,tr); ctx.closePath();
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 1/view.s; ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+
+    // scale readout
+    var kmPerUnit = 70/1400;
+    var px = 120;
+    var km = Math.round(px / view.s * kmPerUnit);
+    document.getElementById('mapScale').textContent = (km < 1 ? '< 1' : km) + ' KM';
+  }
+
+  function hexA(hex, a){
+    var n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + ((n>>16)&255) + ',' + ((n>>8)&255) + ',' + (n&255) + ',' + a + ')';
+  }
+
+  function setActive(rg){
+    active = rg;
+    document.getElementById('rpSub').textContent = 'Region ' + rg.idx + ' of 5';
+    document.getElementById('rpName').textContent = rg.name;
+    document.getElementById('rpDesc').textContent = rg.desc;
+    document.getElementById('rpPct').textContent = rg.pct + '%';
+    document.getElementById('rpLoc').textContent = rg.loc;
+    document.getElementById('rpWx').textContent = rg.wx;
+    var bar = document.getElementById('rpBar');
+    bar.style.width = rg.pct + '%';
+    bar.style.background = rg.colour;
+    draw();
+  }
+
+  function toMap(clientX, clientY){
+    var r = wrap.getBoundingClientRect();
+    return { x: (clientX - r.left - view.x)/view.s, y: (clientY - r.top - view.y)/view.s };
+  }
+
+  function regionAt(mx, my){
+    var dx = mx - 500, dy = my - 700;
+    if (Math.sqrt(dx*dx + dy*dy) < 190) return REGIONS[4];
+    var ang = Math.atan2(dy, dx);
+    for (var i=0;i<REGIONS.length;i++){
+      var rg = REGIONS[i];
+      if (rg.key === 'meridian') continue;
+      var a = rg.a, b = rg.b, t = ang;
+      while (t < a) t += Math.PI*2;
+      if (t <= b) return rg;
+    }
+    return REGIONS[0];
+  }
+
+  // pointer pan + tap-to-select
+  var drag = null, moved = 0;
+  wrap.addEventListener('pointerdown', function(e){
+    if (e.target.closest('.map-panel, .map-tools, .map-legend')) return;
+    drag = { id:e.pointerId, x:e.clientX, y:e.clientY };
+    moved = 0;
+    try { wrap.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  wrap.addEventListener('pointermove', function(e){
+    if (!drag || e.pointerId !== drag.id) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    moved += Math.abs(dx) + Math.abs(dy);
+    view.x += dx; view.y += dy;
+    drag.x = e.clientX; drag.y = e.clientY;
+    clampPan(); draw();
+  });
+  wrap.addEventListener('pointerup', function(e){
+    if (!drag || e.pointerId !== drag.id) return;
+    if (moved < 7){
+      var p = toMap(e.clientX, e.clientY);
+      if (p.x > -120 && p.x < 1120 && p.y > -120 && p.y < 1520) setActive(regionAt(p.x, p.y));
+    }
+    drag = null;
+  });
+  wrap.addEventListener('pointercancel', function(){ drag = null; });
+
+  function zoomAt(factor, cx, cy){
+    var r = wrap.getBoundingClientRect();
+    var ox = (cx == null) ? r.width/2 : cx - r.left;
+    var oy = (cy == null) ? r.height/2 : cy - r.top;
+    var before = { x:(ox - view.x)/view.s, y:(oy - view.y)/view.s };
+    view.s = Math.min(Math.max(view.s*factor, view.fit), 6);
+    view.x = ox - before.x*view.s;
+    view.y = oy - before.y*view.s;
+    clampPan(); draw();
+  }
+
+  wrap.addEventListener('wheel', function(e){
+    e.preventDefault();
+    zoomAt(e.deltaY < 0 ? 1.12 : 1/1.12, e.clientX, e.clientY);
+  }, { passive:false });
+
+  // pinch zoom, for touch
+  var pinch = null;
+  wrap.addEventListener('touchstart', function(e){
+    if (e.touches.length === 2){
+      drag = null;
+      pinch = { d: dist(e.touches), s: view.s };
+    }
+  }, { passive:true });
+  wrap.addEventListener('touchmove', function(e){
+    if (pinch && e.touches.length === 2){
+      e.preventDefault();
+      var r = wrap.getBoundingClientRect();
+      var cx = (e.touches[0].clientX + e.touches[1].clientX)/2;
+      var cy = (e.touches[0].clientY + e.touches[1].clientY)/2;
+      var target = Math.min(Math.max(pinch.s * dist(e.touches)/pinch.d, view.fit), 6);
+      var ox = cx - r.left, oy = cy - r.top;
+      var before = { x:(ox - view.x)/view.s, y:(oy - view.y)/view.s };
+      view.s = target;
+      view.x = ox - before.x*view.s;
+      view.y = oy - before.y*view.s;
+      clampPan(); draw();
+    }
+  }, { passive:false });
+  wrap.addEventListener('touchend', function(e){ if (e.touches.length < 2) pinch = null; }, { passive:true });
+
+  function dist(t){
+    var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx*dx + dy*dy) || 1;
+  }
+
+  document.getElementById('zIn').addEventListener('click', function(){ zoomAt(1.3); });
+  document.getElementById('zOut').addEventListener('click', function(){ zoomAt(1/1.3); });
+  document.getElementById('zReset').addEventListener('click', fit);
+  document.getElementById('zMe').addEventListener('click', function(){ centreOn(TEAM.x, TEAM.y); });
+
+  outline = buildOutline();
+  window.addEventListener('resize', sizeMap);
+  show('s-menu');
+  requestAnimationFrame(function(){ sizeMap(); fit(); setActive(REGIONS[2]); });
+})();
+</script>

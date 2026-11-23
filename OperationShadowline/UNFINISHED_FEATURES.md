@@ -25,16 +25,30 @@ Status key: ⛔ not started · 🔨 partial · ⚠️ written but never compiled
 
 ## Stage 2 — UI
 
-Nothing exists. `Source/.../UI/` is empty.
+**Design specification complete** (`Docs/ui-design-reference.html`, published for review). **No widget built.** `Source/.../UI/` is empty.
 
-| Item | Status |
+| Item | Design | Implementation |
+|---|---|---|
+| Main menu | ✅ specified | ⛔ |
+| Interactive world map (pan, zoom, markers, exploration %) | ✅ specified, interaction prototyped | ⛔ |
+| Operations / mission menu with optional objectives | ✅ specified | ⛔ |
+| Squad management and standing orders | ✅ specified | ⛔ |
+| Loadout (appearance + equipment, weight constraint) | ✅ specified | ⛔ |
+| Graphics settings with preset/Custom behaviour | ✅ specified, behaviour prototyped | ⛔ |
+| In-game HUD and objective tracker | ✅ specified | ⛔ |
+| Pause menu | ⛔ | ⛔ |
+| Progression screen | ⛔ | ⛔ |
+| Records / collected documents screen | ⛔ | ⛔ |
+| CommonUI widget classes, input routing, gamepad focus | ⛔ | ⛔ |
+| Settings screen bound to `UShadowlineGameUserSettings` | ✅ specified | ⛔ (backing class is ⚠️) |
+
+### Open design questions
+
+| Question | Note |
 |---|---|
-| Main menu, settings screen, pause menu | ⛔ |
-| Character / equipment / inventory screens | ⛔ |
-| Interactive world map (zoom, pan, markers, fog of exploration) | ⛔ |
-| Mission menu, objective tracker, squad management | ⛔ |
-| Progression screen | ⛔ |
-| Settings screen wired to `UShadowlineGameUserSettings` | ⛔ (the backing class is ⚠️) |
+| **Mission failure state** | Threshold has no fail state that works as a death screen. Detection should escalate, not end the mission. Unresolved — not guessed at. |
+| Map render source | Specified as a `SceneCapture2D` orthographic bake per region. Untested; may not hold up at 70 km. |
+| Save-header format | The menu's status panel needs act/region/clock/weather/survey% without streaming a level. Schema not designed. |
 
 ## Stage 3 — player character
 

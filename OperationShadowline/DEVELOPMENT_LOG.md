@@ -4,6 +4,68 @@ Append-only. Newest entry at the top. Every entry records what was done, what wa
 
 ---
 
+## 2026-11-23 (later) — Stage 2 begun: interface design reference
+
+### Context change
+
+The user is on an **iPad 11-inch**, not at their laptop. **Unreal Engine does not run on iPadOS at all** — there is no Unreal Editor for iPad, and Remote Control requires the Claude desktop app on a computer, so this session cannot reach the laptop either. Every engine-dependent task is therefore blocked until the user is at their laptop. Laptop specs remain unknown.
+
+The user deferred the scope and workflow decisions, so these were taken:
+
+| Decision | Choice | Reasoning |
+|---|---|---|
+| Scope | **One excellent vertical slice** — a ~2 km Kolda Range valley | A stunning valley is achievable in weeks and is the thing that makes the rest fundable or recruitable. 500 km² of empty terrain reads worse than one finished place. |
+| Workflow | **Claude writes, user builds** (Path A), with Remote Control offered once they are at the laptop | The only workflow available from an iPad. |
+| Immediate work | **Stage 2 UI design**, not more systems code | It is the one stage whose deliverable is reviewable on an iPad, and it is work that must precede any widget being built. |
+
+### Created
+
+`Docs/ui-design-reference.html` — the interface specification for seven screens: main menu, world map, operations, squad, loadout, graphics settings and in-game HUD. Published as a viewable page so it can be reviewed from the iPad.
+
+It is a **design reference, not the game**, and says so prominently on the page. It exists to settle layout, hierarchy and interaction before any UMG widget is built.
+
+Content is drawn from the project's own data, not invented for the mockup: the five regions and their descriptions from `WORLD_AURELIA.md`, the squad and their specialisations, the five acts, and the ten scalability groups with their actual console variables from `DefaultScalability.ini`.
+
+Two parts are functionally interactive, because the feel of them is what needed agreeing:
+
+- **The world map** — pan, scroll-zoom, pinch-zoom, tap-to-select-region, zoom clamped to fit..6×, pan clamped so the island cannot be dragged off-screen, a live scale readout, and markers that reveal labels past a zoom threshold. The island is drawn procedurally (sum-of-sines coastline with three carved bays, regional wedges clipped to the coast, elevation banding north, rivers south, dune hatching west).
+- **The settings screen** — preset and per-group interaction mirrors `UShadowlineGameUserSettings::RefreshQualityPreset`: setting a preset writes every group, changing any single group drops the preset to Custom, and the Custom button is inert because Custom is a state rather than an action. Selecting Low reports Lumen as off, which is what `GlobalIlluminationQuality@0` actually does.
+
+Each screen carries build notes recording the implementation intent and, where relevant, the open design question.
+
+### Design decisions
+
+- **Visual direction: survey instrument, not sci-fi HUD.** Desaturated slate, bone text, a single muted amber for active state and a cool cyan for data. Archivo Narrow for headings (institutional and condensed), IBM Plex Sans for body, IBM Plex Mono for every readout — grid references, times, console variables. The deliberate avoidance is the near-black-with-acid-green look that every tactical game UI defaults to.
+- **Committed single dark theme.** A game interface is dark in every viewer's theme; the page sets `color-scheme: dark` and defines every colour explicitly rather than offering a light variant that would misrepresent the design.
+- **Loadout merges appearance and equipment** onto one screen, because in a stealth game carried volume changes silhouette, and silhouette is a stealth variable. No grid inventory: weight against capacity is the only constraint.
+- **HUD is deliberately sparse** — no minimap, no health bar. The only continuous readout is concealment state.
+- **Settings are honest about hardware.** The bar reports the detected RHI and whether hardware ray tracing is available; options the GPU cannot do are disabled with the reason shown rather than silently ignored.
+
+### Verified
+
+- ✅ The page's script parses (`new Function` over the extracted script body)
+- ✅ Published and renders; map pan/zoom/selection and the preset/group interplay were exercised in the published page
+
+### NOT verified
+
+- The design has had no user review yet — that is what it is for
+- **No UMG widget has been built.** This is a specification; `Source/.../UI/` is still empty
+- Nothing about the Unreal project has changed, and it is still uncompiled
+
+### Open design question recorded
+
+**Mission failure.** Threshold has no fail state that works as a death screen — detection should escalate, not end the mission. Logged in `UNFINISHED_FEATURES.md` rather than guessed at.
+
+### Next
+
+Still blocked on the laptop for anything engine-side. Available without it:
+
+1. User reviews the interface reference and says what is wrong with it
+2. Stage 2 continues: `UShadowlineUISubsystem`, the settings-screen data binding, and the CommonUI widget class skeletons — all authorable here
+3. Companion data asset schema (dialogue, specialisation tiers), which Stage 7 needs and which is pure data design
+
+---
+
 ## 2026-11-23 — Stage 1: environment inspection and project establishment
 
 ### Environment inspected
