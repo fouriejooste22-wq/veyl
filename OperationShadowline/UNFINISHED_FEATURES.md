@@ -1,5 +1,7 @@
 # Unfinished features
 
+> **Playable now:** `Prototype/shadowline-field.html` ([published](https://claude.ai/artifact/TvkgknUwFDViJR1T22mEgv)) is a browser prototype of the stealth loop, playable on an iPad. It is **not** the UE5 game and shares no code with it — only data. Four-player co-op is written but needs the `room` capability enabled. See `Docs/MOBILE_AND_COOP.md`.
+
 Authoritative register of what does **not** exist yet. Nothing is marked done until it has been built and run.
 
 Status key: ⛔ not started · 🔨 partial · ⚠️ written but never compiled · ✅ built and tested

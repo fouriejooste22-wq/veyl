@@ -4,6 +4,71 @@ Append-only. Newest entry at the top. Every entry records what was done, what wa
 
 ---
 
+## 2026-11-23 (overnight) — Playable field prototype: the stealth loop, on a tablet
+
+### What was asked, and the choices made unsupervised
+
+Asked for a playable mobile/iPad version at top specs, four-player multiplayer, keeping the laptop version. The user went to sleep with "choose for me the best".
+
+| Decision | Choice | Why |
+|---|---|---|
+| Native iPad build? | **No** | Needs a Mac, Xcode and an Apple Developer account, none of which exist here. And Nanite/Lumen/VSM do not run on iOS, so it is a second art pipeline, not a build setting. Recorded in `Docs/MOBILE_AND_COOP.md`. |
+| What to build instead | **A browser game that is genuinely playable on an iPad** | Touch-first, runs in Safari, no install. And it is not throwaway: the stealth loop is the riskiest part of the design, and testing it in a browser is far cheaper than discovering it is wrong in an engine. |
+| Genre/view | **Top-down tactical** rather than attempted 3D | Reads perfectly on touch, suits co-op where each player drives one squad member, and achieves real visual quality in canvas instead of a poor 3D imitation. |
+| Co-op shape | **Four players, one character each** | Maps exactly onto the fiction: Lead, Ferreiro, Okonkwo, Varga. Unclaimed positions fall to the companion AI, so a game is never short-handed. |
+| Laptop project | **Untouched** | The prototype is in its own `Prototype/` folder and shares no code — only data. |
+
+### Created
+
+`Prototype/shadowline-field.html` — ~1,900 lines. Ferrow's Crossing, the Act III mission "Standing Water", playable end to end.
+
+Implements: guard patrols with pauses and idle scanning; vision cones raycast against geometry; suspicion build-up and decay across four guard states; guard-to-guard alerting within communication range; concealment from stance, reeds, light pools and pace; noise propagation modified by water and reeds; three companions with formation-following, vision-cone avoidance and revive; four characters with distinct abilities; an acoustic emitter as a distraction; site alert escalation to forced extraction; nine objectives including three optional; and all four difficulty presets.
+
+**The difficulty values are the ones from `FShadowlineDifficultyKnobs::FromPreset`.** Playing Blackout in the browser tells you how Blackout will feel in the engine.
+
+`Docs/MOBILE_AND_COOP.md` — the honest native-mobile requirements and cost, the co-op architecture, and what was verified.
+`Tools/verify_prototype_map.mjs` — map playability verification.
+
+### Verified
+
+`node Tools/verify_prototype_map.mjs` → **23 of 23 pass.** It extracts the map data and the pure geometry and pathfinding code straight out of the HTML and checks connectivity.
+
+**It caught seven mission-breaking bugs on its first run**, two of which made the mission mathematically impossible to complete:
+
+| Bug | Consequence |
+|---|---|
+| Patrol route 4 ran down the middle of the east river | Guard stuck on frame one |
+| Route 0's first waypoint sat inside a crate | Same |
+| The west survey marker was inside deep water | **Objective unreachable — mission uncompletable** |
+| The exfil zone was in unswimmable water | **Mission unfinishable** |
+| The southern reed channel was deep water | South bank cut in two |
+| The main river stopped 6 m short of each map edge | **The entire bridge chokepoint could be walked around at the shoreline** |
+| A cover crate clipped the corrected route 4 | Guard stuck |
+
+That last river bug is the one worth noting: it would not show up in a short playtest, and it silently destroyed the tactical point of the map's centrepiece.
+
+A performance pass followed, because this has to run on a tablet: wall lookups moved to a baked 0.5 m occupancy grid (vision rays call `wallAt` tens of thousands of times a second), vision cones cached and rebuilt at 8 Hz instead of 60, and off-screen geometry plus distant reed detail culled entirely.
+
+### Blocked, needing the user
+
+**Four-player co-op is written and complete but not switched on.** It needs the `room` capability, which opens a live channel between everyone viewing the page, and auto mode correctly refused to grant that without the owner's say-so.
+
+The code degrades exactly as designed — `claude.use("room")` returns null, the game runs solo with companion AI, no error and no missing features — which is why the prototype is playable right now. Enabling co-op is one line on the publish.
+
+### NOT verified
+
+- **How it feels.** Guard spacing, suspicion rates, companion follow distance, whether the mission is too hard. All judgement calls needing a person to play it.
+- Co-op has never run with two live players, since the channel is off.
+- Nothing about the UE5 project changed, and it is still uncompiled.
+
+### Next
+
+1. The user plays it and says what is wrong with the stealth loop
+2. Their answer on enabling co-op
+3. Still waiting on the laptop: compile, and run `Shadowline.Campaign` automation tests
+
+---
+
 ## 2026-11-23 (later still) — Campaign subsystem, save schema, companions, and the first real tests
 
 ### Context
