@@ -1,0 +1,50 @@
+# Unreal Engine generated / derived — never commit these
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+.idea/
+*.sln
+*.suo
+*.xcodeproj
+*.xcworkspace
+*.VC.db
+*.VC.opendb
+*.opensdf
+*.sdf
+*.sln.docstates
+*.opendb
+
+# Compiled binaries
+*.obj
+*.pdb
+*.lib
+*.dll
+*.exe
+*.so
+*.a
+*.o
+
+# Plugin build output (plugin sources themselves are tracked)
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# Local-only config: machine-specific paths, local overrides
+Config/WindowsEditor/
+Config/LinuxEditor/
+Saved/Config/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Crash and profiling output
+*.dmp
+*.log
+Saved/Crashes/
+Saved/Logs/
+Saved/Profiling/
