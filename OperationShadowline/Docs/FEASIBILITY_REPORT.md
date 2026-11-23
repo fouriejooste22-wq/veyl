@@ -170,6 +170,28 @@ The honest framing: **build a vertical slice that is excellent, not a whole isla
 
 ---
 
+## 5b. Console targets — asked and answered
+
+**Can this be put on a PS4? No.** Three independent blockers:
+
+1. **UE5 does not support PS4.** Epic dropped last-generation consoles in Unreal Engine 5; PS4 and Xbox One were UE4 platforms. This project is UE 5.5, so PS4 is not a build target that exists for it.
+2. **The hardware could not run it.** A base PS4 is roughly 1.8 TFLOPS with a 1.6 GHz Jaguar CPU. Nanite, Lumen and Virtual Shadow Maps all require Shader Model 6-class hardware. The Low tier in `DefaultScalability.ini` already drops Lumen entirely, and that floor is still well above a PS4.
+3. **A retail PS4 will not install your own software.** Publishing to PlayStation requires a PlayStation Partners account (company registration, approved pitch), a leased devkit, Sony's SDK, and passing certification. Unreal's console platform code is not in the public engine download — licensed developers obtain it through the platform holder's portal.
+
+### What this means in practice
+
+| Want | Path |
+|---|---|
+| Play the game | **Windows PC.** No approval, no platform fee. Already the project's target. |
+| Play it on a TV with a controller | PC to the TV via HDMI. A DualShock 4 works over USB or Bluetooth, and Steam Input maps it automatically. |
+| Stream it to the PS4 | Not possible. Remote Play runs PS4 → PC, never PC → PS4. |
+| Ship it to other people | itch.io (free) or Steam (one-off fee per app). |
+| Reach a console eventually | **PS5**, which UE5 does support — but still needs an approved PlayStation developer account. A conversation for after there is a playable vertical slice to show, not before. |
+
+### The decision this forces
+
+If PS4 specifically were the goal, the correct engine would be **UE4, not UE5** — and that means giving up Nanite, Lumen and the photorealistic target in section 3 of the brief. **Recorded decision: stay on UE5 and target Windows.** The visual quality is the point of the project; a PS4 build is not worth trading it for. Cheap to reverse now, expensive later.
+
 ## 6. Two paths forward
 
 ### Path A — You run the engine, I write the code (default)
