@@ -4,6 +4,64 @@ Append-only. Newest entry at the top. Every entry records what was done, what wa
 
 ---
 
+## 2026-11-24 — 3D rebuild of the prototype
+
+### The criticism was correct
+
+The user's response to the top-down prototype: "looks like something for a 2 yr old, where is the 3d". Fair. The original brief said explicitly *do not build a simple prototype that looks like a basic Unity or browser game*, and a top-down canvas build with circles for people is exactly that. Rebuilt in real 3D.
+
+### Created
+
+`Prototype/shadowline-3d.html` — WebGL third-person stealth, ~2,080 lines. Three.js r137 (UMD), pinned, loaded from jsDelivr.
+
+| | |
+|---|---|
+| Terrain | 96 × 72 m playfield inside a 288 × 264 m heightfield, carved riverbeds, levelled mill floor and bridge approaches, two-octave vertex colouring |
+| Horizon | Ground climbs into forested valley walls outside the playfield, with an instanced far treeline, so the skyline is landscape rather than a cut edge |
+| Sky | Vertex-coloured gradient dome, fog matched to the horizon colour |
+| Lighting | Low warm directional sun with PCF soft shadow maps (frustum follows the player), hemisphere fill, seven unshadowed lamp point lights with additive ground pools |
+| Water | Animated swell injected into a standard material, so it keeps real lighting and a sun specular |
+| Vegetation | Instanced trees (trunk + two canopy tiers), instanced reeds with a wind sway in the vertex shader, instanced stones |
+| Characters | Articulated figures — hips, torso, chest, head, two arms, two legs, boots, packs, guard caps and vests — with a procedural walk cycle, stance poses and head look |
+| Weather | ~900 instanced rain streaks recycled around the camera |
+| Controls | Left thumbstick, drag-to-look, pinch zoom, full keyboard and mouse |
+| Quality | Low → Ultra, rebuilding shadow resolution, pixel ratio, vegetation density, rain and draw distance |
+
+The simulation underneath is the same verified model: guard perception, suspicion across four states, communication range, concealment, noise, companion AI, nine objectives, and the four difficulty presets with the real values from `FShadowlineDifficultyKnobs::FromPreset`.
+
+### Verified, with a browser
+
+Three.js was pulled from the npm registry to confirm the CDN path and the API surface: `three@0.137.5/build/three.min.js` exists as a UMD build, and every symbol used is present. `CapsuleGeometry` is **not** in r137 — correctly avoided.
+
+The page was then run in headless Chromium with software WebGL (SwiftShader) and screenshotted across five iterations. **Zero runtime errors in every pass.** The frame counter reads 4 FPS there because it is a CPU rasteriser with no GPU; it says nothing about real hardware.
+
+### What the screenshots caught
+
+Looking at the render, rather than trusting the code, found four things no amount of reading would have:
+
+| Problem | Cause | Fix |
+|---|---|---|
+| Everything washed out pale | **Three r137 has no automatic colour management.** A hex set on a material is treated as already-linear, then `outputEncoding` converts linear → sRGB on output, so every authored colour rendered roughly twice as bright as intended | Convert every material, vertex and light colour from sRGB to linear once, up front |
+| Camera spawned inside a tree trunk | Tree scatter excluded the mill yard but not the landing point | Clear a 9.5 m radius around the insertion point |
+| Black void above the horizon | Flat background colour, fog colour darker than the sky | Gradient sky dome, fog matched to the horizon |
+| Canopies formed a ceiling overhead | Tree canopies were 6–12 m across at that spacing | Halved the scale range, roughly doubled the spacing |
+
+The colour-management one is the significant find: it is invisible in code review and it was the reason three consecutive lighting passes looked wrong. The first two "fixes" were over-corrections chasing a symptom.
+
+### Honest about what it is
+
+It is **real-time 3D with real dynamic shadows, atmospherics and a full stealth simulation**. It is **not** Ghost Recon, and it is not photorealistic: low-poly stylised geometry, untextured materials, no normal maps, no Nanite, no Lumen, no global illumination. WebGL on a tablet with no asset budget cannot be those things.
+
+The photorealistic target still lives in the UE5 project, which is still uncompiled and still waiting on the laptop.
+
+### NOT verified
+
+- **How it runs on a real iPad.** Every frame number here came from a software rasteriser
+- **How it plays.** Camera distance, walk speed, guard spacing — all judgement calls needing a person
+- Co-op is still written and still switched off, pending the `room` capability
+
+---
+
 ## 2026-11-23 (overnight) — Playable field prototype: the stealth loop, on a tablet
 
 ### What was asked, and the choices made unsupervised
