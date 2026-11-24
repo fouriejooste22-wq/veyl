@@ -4,6 +4,67 @@ Append-only. Newest entry at the top. Every entry records what was done, what wa
 
 ---
 
+## 2026-11-24 (later) — Mountain rebuild: Hale Terraces, Kolda Range
+
+### The ask
+
+"Make it beautiful and cool mountain terrain and stuff", continue unsupervised, and no more of the old build.
+
+### What was chosen
+
+Mountains map straight onto the project's own fiction, so rather than inventing a setting the prototype moved to **Hale Terraces in the Kolda Range** — Act II, "Inventory", against Site Warden Imre Bako, exactly as `Docs/CAMPAIGN.md` describes it. Nine villages emptied in a night, a warden counting what was left behind, and an inventory that is itself the evidence. This also delivers the brief's original milestone 1: mountains, realistic terrain, trees, atmospheric lighting.
+
+The top-down build was deleted. It is in git history if it is ever wanted.
+
+### Created
+
+`Prototype/shadowline-3d.html`, rebuilt from the ground up — 1,959 lines, same artifact link.
+
+| | |
+|---|---|
+| Terrain | Hash-based value noise, fractal and ridged, baked to a 1 m heightmap and bilinearly sampled. A winding valley between ridges, 116 m of relief inside a 128 × 128 m playfield, climbing to 150 m+ peaks in the surrounding scenery |
+| Movement | **Slope-based walkability** — anything steeper than about 49° cannot be climbed, so 56% of the map is impassable and the valley, the road and the terraces are genuinely the ways through |
+| Village | Four terraces cut into the east shoulder with ramps between them, retaining walls, nine stone buildings, a chapel with a tower and spire |
+| Road | A ten-node switchback from the valley floor to the north pass, carved into the heightfield and laid with a ribbon mesh |
+| Snow line | Snow above 30 m (1,920 m on the in-game altimeter), shed from steep ground so crests read as bare rock |
+| Treeline | Pines thin out and stop at 34 m, which is what makes a treeline read |
+| Lighting | Low golden-hour sun with PCF soft shadows on a player-following frustum, strong sky fill so shadows read blue |
+| Weather | Billboarded drifting snow, drifting valley mist planes, far-reaching blue haze |
+| Pathfinding | Binary-heap A* with a climb penalty, so patrols prefer the road and the terraces over scrambling up the shoulder |
+
+Stealth additions the mountain made possible: snow above the snow line strips concealment, pines give it back, crusted snow carries noise further, the loose road surface is louder, and climbing is slower than walking.
+
+### Verified
+
+`node Tools/verify_prototype_map.mjs` → **18 of 18**, rewritten for the new terrain. Then five render passes in headless Chromium with software WebGL, **zero runtime errors throughout**.
+
+Between them they caught eight real defects:
+
+| Found | Consequence |
+|---|---|
+| **A patrol looped two metres from the insertion point** | The team came ashore on top of a guard and was pinned in nine seconds. Found by watching a render end instantly |
+| The village inventory was inside the office's own footprint | Objective unreachable — mission uncompletable |
+| Two survey stakes sat on terrace retaining steps | Same |
+| Two shrines were in the tarn or on an unclimbable slope | Same |
+| Seven patrol waypoints were in a house, in the lake, or on a retaining wall | Guards stuck on frame one |
+| The ramp to terrace 4 cut through the chapel's north wall | Building on a 5 m step |
+| **The altimeter multiplied metres by ten** | Elevation read 54 m when the player was at 5.4 m |
+| **The camera boom pulled in against uphill terrain** | On a mountain the ground behind you is almost always uphill, so the camera jammed against the character for the whole climb. Now it rises over the slope and only buildings shorten the boom |
+
+The spawn-adjacent patrol and the camera boom are the two that matter: neither is visible in code review, and both made the game unplayable. There is now a check asserting no patrol waypoint sits within sight of the insertion point.
+
+### Honest about what it is
+
+Real-time 3D with fractal terrain, dynamic shadows, a working snow line and a full stealth simulation. Still low-poly and untextured — no normal maps, no global illumination, no Nanite or Lumen. A browser on a tablet with no art budget cannot be those things, and the photorealistic target is still the UE5 project.
+
+### NOT verified
+
+- **How it runs on real hardware.** Every frame figure came from a software rasteriser
+- **How it plays.** Climb pacing, guard spacing on terraces, whether the pass is too far
+- Co-op remains written and switched off
+
+---
+
 ## 2026-11-24 — 3D rebuild of the prototype
 
 ### The criticism was correct
